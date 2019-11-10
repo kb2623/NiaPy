@@ -72,8 +72,8 @@ check_python_version()
 PACKAGE_VERSION = read_package_variable('__version__')
 
 setuptools.setup(
-    name=PACKAGE_NAME,
-    version="2.0.0rc5",
+    name=read_package_variable('__project__'),
+    version=read_package_variable('__version__'),
     description="""
         Python micro framework for building nature-inspired algorithms.
         """,
