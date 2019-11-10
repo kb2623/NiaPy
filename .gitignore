@@ -62,4 +62,10 @@ Icon*
 # Project related
 /examples/export
 
+# C files
+functions/benchmark_functions.c
+
+# Sgared librarys
+**/*.so
+
 .python-version
