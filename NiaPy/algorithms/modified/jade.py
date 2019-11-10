@@ -2,9 +2,10 @@
 # pylint: disable=mixed-indentation, multiple-statements, logging-not-lazy, attribute-defined-outside-init, line-too-long, arguments-differ, singleton-comparison, bad-continuation, dangerous-default-value, consider-using-enumerate, unused-argument, keyword-arg-before-vararg
 import logging
 
-from numpy import random as rand, concatenate, asarray, argsort
+from numpy import random as rand, concatenate, asarray, argsort  # , argmin, argmax, mean, cos
 
-from NiaPy.algorithms.basic.de import DifferentialEvolution
+# from NiaPy.algorithms.algorithm import Individual
+from NiaPy.algorithms.basic.de import DifferentialEvolution  # , CrossBest1, CrossRand1, CrossCurr2Best1, CrossBest2, CrossCurr2Rand1, proportional
 
 logging.basicConfig()
 logger = logging.getLogger('NiaPy.algorithms.modified')
@@ -24,13 +25,13 @@ def CrossRandCurr2Pbest(pop, ic, x_b, f, cr, p=0.2, arc=None, rnd=rand, *args):
 		Name: DE/curr2pbest/1
 
 	Args:
-		pop (numpy.ndarray): Current population.
+		pop (numpy.ndarray[Individual]): Current population.
 		ic (int): Index of current individual.
-		x_b (numpy.ndarray): Global best individual.
+		x_b (Individual): Global best individual.
 		f (float): Scale factor.
 		cr (float): Crossover probability.
 		p (float): Procentage of best individuals to use.
-		arc (numpy.ndarray): Achived individuals.
+		arc (numpy.ndarray[Individual]): Achived individuals.
 		rnd (mtrand.RandomState): Random generator.
 		*args (Dict[str, Any]): Additional argumets.
 
@@ -43,8 +44,8 @@ def CrossRandCurr2Pbest(pop, ic, x_b, f, cr, p=0.2, arc=None, rnd=rand, *args):
 	# Get pbest index
 	index, pi = argsort(pop), int(len(pop) * p)
 	ppop = pop[index[:pi]]
-	pb = [1 / len(ppop) for i in range(pi)] if len(ppop) > 1 else None
-	rp = rnd.choice(pi, 1, replace=not len(ppop) >= 1, p=pb)
+	pb = [1 / (len(ppop) - 1) if i != ic else 0 for i in range(len(ppop))] if len(ppop) > 1 else None
+	rp = rnd.choice(len(ppop), 1, replace=not len(ppop) >= 1, p=pb)
 	# Get union population and archive index
 	apop = concatenate((pop, arc)) if arc is not None else pop
 	pb = [1 / (len(apop) - 1) if i != ic else 0 for i in range(len(apop))] if len(apop) > 1 else None

@@ -1,5 +1,4 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, multiple-statements, line-too-long, logging-not-lazy, no-self-use, attribute-defined-outside-init, arguments-differ, bad-continuation
 import logging
 
 from scipy.special import gamma as Gamma
@@ -46,12 +45,12 @@ class FlowerPollinationAlgorithm(Algorithm):
 
 	@staticmethod
 	def typeParameters():
-		r"""TODO.
+		r"""Get dictionary with functions for checking values of parameters.
 
 		Returns:
 			Dict[str, Callable]:
-				* p (function): TODO
-				* beta (function): TODO
+				* p (Callable[[float], bool])
+				* beta (Callable[[Union[float, int], bool])
 
 		See Also:
 			* :func:`NiaPy.algorithms.Algorithm.typeParameters`
@@ -114,18 +113,19 @@ class FlowerPollinationAlgorithm(Algorithm):
 		Args:
 			task (Task): Optimization task.
 			Sol (numpy.ndarray): Current population.
-			Sol_f (numpy.ndarray): Current population fitness/function values.
+			Sol_f (numpy.ndarray[float]): Current population fitness/function values.
 			xb (numpy.ndarray): Global best solution.
 			fxb (float): Global best solution function/fitness value.
 			**dparams (Dict[str, Any]): Additional arguments.
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, float, Dict[str, Any]]:
+			Tuple[numpy.ndarray, numpy.ndarray[float], numpy.ndarray, float, Dict[str, Any]]:
 				1. New population.
 				2. New populations fitness/function values.
-				3. New global best solution
-				4. New global best solution fitness/objective value
-				5. Additional arguments.
+				3. New global best position.
+				4. New global best positions function/fitness value.
+				5. Additional arguments:
+					* S: TODO
 		"""
 		for i in range(self.NP):
 			if self.uniform(0, 1) > self.p: S[i] += self.levy(task.D) * (Sol[i] - xb)
@@ -134,8 +134,9 @@ class FlowerPollinationAlgorithm(Algorithm):
 				S[i] += self.uniform(0, 1) * (Sol[JK[0]] - Sol[JK[1]])
 			S[i] = self.repair(S[i], task)
 			f_i = task.eval(S[i])
-			if f_i <= Sol_f[i]: Sol[i], Sol_f[i] = S[i], f_i
-			if f_i <= fxb: xb, fxb = S[i].copy(), f_i
+			if f_i <= Sol_f[i]:
+				Sol[i], Sol_f[i] = S[i].copy(), f_i
+				if f_i <= fxb: xb, fxb = S[i].copy(), f_i
 		return Sol, Sol_f, xb, fxb, {'S': S}
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

@@ -1,178 +1,148 @@
 # encoding=utf8
-# pylint: disable=anomalous-backslash-in-string
 
-"""Implementations of Alpine functions."""
+"""Implementations of Alpine benchmarks."""
+from typing import Callable, Union, List
 
-import math
+import numpy as np
+
 from NiaPy.benchmarks.benchmark import Benchmark
+from .functions import alpine1_function, alpine2_function
 
-__all__ = ['Alpine1', 'Alpine2']
-
+__all__ = ["Alpine1", "Alpine2"]
 
 class Alpine1(Benchmark):
-    r"""Implementation of Alpine1 function.
+	r"""Implementation of Alpine1 function.
 
-    Date: 2018
+	Date:
+		2018
 
-    Author: Lucija Brezočnik
+	Author:
+		Klemen Berkovič
 
-    License: MIT
+	License:
+		MIT
 
-    Function: **Alpine1 function**
+	Function:
+		Alpine1 function
 
-        :math:`f(\mathbf{x}) = \sum_{i=1}^{D} |x_i \sin(x_i)+0.1x_i|`
+		:math:`f(\mathbf{x}) = \sum_{i=1}^{D} |x_i \sin(x_i)+0.1x_i|`
 
-        **Input domain:**
-        The function can be defined on any input domain but it is usually
-        evaluated on the hypercube :math:`x_i ∈ [-10, 10]`, for all :math:`i = 1, 2,..., D`.
+		Input domain:
+			The function can be defined on any input domain but it is usually evaluated on the hypercube :math:`x_i ∈ [-10, 10]`, for all :math:`i = 1, 2,..., D`.
 
-        **Global minimum:** :math:`f(x^*) = 0`, at :math:`x^* = (0,...,0)`
+		Global minimum:
+			:math:`f(x^*) = 0`, at :math:`x^* = (0,...,0)`
 
-    LaTeX formats:
-        Inline:
-                $f(\mathbf{x}) = \sum_{i=1}^{D} \left |x_i \sin(x_i)+0.1x_i \right|$
+	LaTeX formats:
+		Inline:
+			$f(\mathbf{x}) = \sum_{i=1}^{D} \left |x_i \sin(x_i)+0.1x_i \right|$
 
-        Equation:
-                \begin{equation} f(x) = \sum_{i=1}^{D} \left|x_i \sin(x_i) + 0.1x_i \right| \end{equation}
+		Equation:
+			\begin{equation} f(x) = \sum_{i=1}^{D} \left|x_i \sin(x_i) + 0.1x_i \right| \end{equation}
 
-        Domain:
-                $-10 \leq x_i \leq 10$
+		Domain:
+			$`-10 \leq x_i \leq 10$
 
-    Reference paper:
-        Jamil, M., and Yang, X. S. (2013).
-        A literature survey of benchmark functions for global optimisation problems.
-        International Journal of Mathematical Modelling and Numerical Optimisation,
-        4(2), 150-194.
-    """
-    Name = ['Alpine1']
+	Reference paper:
+		Jamil, M., and Yang, X. S. (2013). A literature survey of benchmark functions for global optimisation problems. International Journal of Mathematical Modelling and Numerical Optimisation, 4(2), 150-194.
+	"""
+	Name: List[str] = ["Alpine1"]
 
-    def __init__(self, Lower=-10.0, Upper=10.0):
-        r"""Initialize of Alpine1 benchmark.
+	def __init__(self, Lower: Union[int, float, np.ndarray] = -10.0, Upper: Union[int, float, np.ndarray] = 10.0):
+		r"""Initialize of Alpine1 benchmark.
 
-        Args:
-            Lower (Optional[float]): Lower bound of problem.
-            Upper (Optional[float]): Upper bound of problem.
+		Args:
+			Lower: Lower bound of problem.
+			Upper: Upper bound of problem.
 
-        See Also:
-            :func:`NiaPy.benchmarks.Benchmark.__init__`
-        """
-        Benchmark.__init__(self, Lower, Upper)
+		See Also:
+			* :func:`NiaPy.benchmarks.Benchmark.__init__`
+		"""
+		Benchmark.__init__(self, Lower, Upper)
 
-    @staticmethod
-    def latex_code():
-        r"""Return the latex code of the problem.
+	@staticmethod
+	def latex_code() -> str:
+		"""Return the latex code of the problem.
 
-        Returns:
-            str: Latex code
-        """
-        return r'''$f(\mathbf{x}) = \sum_{i=1}^{D} \left |x_i \sin(x_i)+0.1x_i \right|$'''
+		Returns:
+			Latex code.
+		"""
+		return r"""$f(\mathbf{x}) = \sum_{i=1}^{D} \left |x_i \sin(x_i)+0.1x_i \right|$"""
 
-    def function(self):
-        r"""Return benchmark evaluation function.
+	@classmethod
+	def function(cls) -> Callable[[np.ndarray, dict], float]:
+		"""Return benchmark evaluation function.
 
-        Returns:
-            Callable[[int, Union[int, float, List[int, float], numpy.ndarray]], float]: Fitness function
-        """
-        def evaluate(D, sol):
-            r"""Fitness function.
-
-            Args:
-                D (int): Dimensionality of the problem
-                sol (Union[int, float, List[int, float], numpy.ndarray]): Solution to check.
-
-            Returns:
-                float: Fitness value for the solution.
-            """
-            val = 0.0
-
-            for i in range(D):
-                val += abs(math.sin(sol[i]) + 0.1 * sol[i])
-
-            return val
-
-        return evaluate
-
+		Returns:
+			Evaluation function.
+		"""
+		return lambda x, **a: alpine1_function(x)
 
 class Alpine2(Benchmark):
-    r"""Implementation of Alpine2 function.
+	r"""Implementation of Alpine2 function.
 
-    Date: 2018
+	Date:
+		2018
 
-    Author: Lucija Brezočnik
+	Author:
+		Klemen Brekovič
 
-    License: MIT
+	License:
+		MIT
 
-    Function: **Alpine2 function**
+	Function:
+		Alpine2 function
 
-        :math:`f(\mathbf{x}) = \prod_{i=1}^{D} \sqrt{x_i} \sin(x_i)`
+		:math:`f(\mathbf{x}) = \prod_{i=1}^{D} \sqrt{x_i} \sin(x_i)`
 
-        **Input domain:**
-        The function can be defined on any input domain but it is usually
-        evaluated on the hypercube :math:`x_i ∈ [0, 10]`, for all :math:`i = 1, 2,..., D`.
+		Input domain:
+			The function can be defined on any input domain but it is usually evaluated on the hypercube :math:`x_i ∈ [0, 10]`, for all :math:`i = 1, 2,..., D`.
 
-        **Global minimum:** :math:`f(x^*) = 2.808^D`, at :math:`x^* = (7.917,...,7.917)`
+		Global minimum:
+			:math:`f(x^*) = 2.808^D`, at :math:`x^* = (7.917,...,7.917)`
 
-    LaTeX formats:
-        Inline:
-                $f(\mathbf{x}) = \prod_{i=1}^{D} \sqrt{x_i} \sin(x_i)$
+	LaTeX formats:
+		Inline:
+			$f(\mathbf{x}) = \prod_{i=1}^{D} \sqrt{x_i} \sin(x_i)$
 
-        Equation:
-                \begin{equation} f(\mathbf{x}) =
-                \prod_{i=1}^{D} \sqrt{x_i} \sin(x_i) \end{equation}
+		Equation:
+			\begin{equation} f(\mathbf{x}) = \prod_{i=1}^{D} \sqrt{x_i} \sin(x_i) \end{equation}
 
-        Domain:
-                $0 \leq x_i \leq 10$
+		Domain:
+			$0 \leq x_i \leq 10$
 
-    Reference paper:
-        Jamil, M., and Yang, X. S. (2013).
-        A literature survey of benchmark functions for global optimisation problems.
-        International Journal of Mathematical Modelling and Numerical Optimisation,
-        4(2), 150-194.
-    """
-    Name = ['Alpine2']
+	Reference paper:
+		Jamil, M., and Yang, X. S. (2013). A literature survey of benchmark functions for global optimisation problems. International Journal of Mathematical Modelling and Numerical Optimisation, 4(2), 150-194.
+	"""
+	Name: List[str] = ["Alpine2"]
 
-    def __init__(self, Lower=0.0, Upper=10.0):
-        r"""Initialize of Alpine2 benchmark.
+	def __init__(self, Lower: Union[int, float, np.ndarray] = 0.0, Upper: Union[int, float, np.ndarray] = 10.0) -> None:
+		r"""Initialize Alpine2 benchmark.
 
-        Args:
-            Lower (Optional[float]): Lower bound of problem.
-            Upper (Optional[float]): Upper bound of problem.
+		Args:
+			Lower: Lower bound of problem.
+			Upper: Upper bound of problem.
 
-        See Also:
-            :func:`NiaPy.benchmarks.Benchmark.__init__`
-        """
-        Benchmark.__init__(self, Lower=Lower, Upper=Upper)
+		See Also:
+			* :func:`NiaPy.benchmarks.Benchmark.__init__`
+		"""
+		Benchmark.__init__(self, Lower=Lower, Upper=Upper)
 
-    @staticmethod
-    def latex_code():
-        r"""Return the latex code of the problem.
+	@staticmethod
+	def latex_code() -> str:
+		"""Return the latex code of the problem.
 
-        Returns:
-            str: Latex code
-        """
-        return r'''$f(\mathbf{x}) = \prod_{i=1}^{D} \sqrt{x_i} \sin(x_i)$'''
+		Returns:
+			Latex code.
+		"""
+		return r"""$f(\mathbf{x}) = \prod_{i=1}^{D} \sqrt{x_i} \sin(x_i)$"""
 
-    def function(self):
-        r"""Return benchmark evaluation function.
+	def function(self) -> Callable[[np.ndarray, dict], float]:
+		"""Return benchmark evaluation function.
 
-        Returns:
-            Callable[[int, Union[int, float, List[int, float], numpy.ndarray]], float]: Fitness function
-        """
-        def evaluate(D, sol):
-            r"""Fitness function.
+		Returns:
+			Evaluation function.
+		"""
+		return lambda x, **a: alpine2_function(x)
 
-            Args:
-                D (int): Dimensionality of the problem
-                sol (Union[int, float, List[int, float], numpy.ndarray]): Solution to check.
-
-            Returns:
-                float: Fitness value for the solution.
-            """
-            val = 1.0
-
-            for i in range(D):
-                val *= math.sqrt(sol[i]) * math.sin(sol[i])
-
-            return val
-
-        return evaluate
+# vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

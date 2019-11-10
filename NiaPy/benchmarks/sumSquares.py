@@ -1,8 +1,5 @@
 # encoding=utf8
 # pylint: disable=anomalous-backslash-in-string
-
-"""Sum Squares benchmark."""
-
 import math
 from NiaPy.benchmarks.benchmark import Benchmark
 
@@ -66,9 +63,10 @@ class SumSquares(Benchmark):
         """
         return r'''$f(\mathbf{x}) = \sum_{i=1}^D i x_i^2$'''
 
-    def function(self):
+    @classmethod
+    def function(cls):
         r"""Return benchmark evaluation function.
-
+        
         Returns:
             Callable[[int, Union[int, float, List[int, float], numpy.ndarray]], float]: Fitness function
         """
@@ -78,9 +76,9 @@ class SumSquares(Benchmark):
             Args:
                 D (int): Dimensionality of the problem
                 sol (Union[int, float, List[int, float], numpy.ndarray]): Solution to check.
-
+            
             Returns:
-                float: Fitness value for the solution.
+                float: Fitness value for the solution.    
             """
             val = 0.0
 

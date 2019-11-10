@@ -4,12 +4,24 @@ from NiaPy.tests.test_algorithm import AlgorithmTestCase, MyBenchmark
 from NiaPy.algorithms.basic import HarmonySearch, HarmonySearchV1
 
 class HSTestCase(AlgorithmTestCase):
-	def setUp(self):
-		AlgorithmTestCase.setUp(self)
-		self.algo = HarmonySearch
+	r"""Test case for HarmonySearch algorithm.
+
+	Date:
+		April 2019
+
+	Author:
+		Klemen Berkovič
+
+	See Also:
+		* :class:`NiaPy.algorithms.basic.HarmonySearch`
+	"""
+	def test_algorithm_info(self):
+		"""Test case for algorithm info."""
+		self.assertIsNotNone(HarmonySearch.algorithmInfo())
 
 	def test_type_parameters(self):
-		d = self.algo.typeParameters()
+		"""Test case for type parameters."""
+		d = HarmonySearch.typeParameters()
 		self.assertIsNotNone(d.get('HMS', None))
 		self.assertTrue(d['HMS'](10))
 		self.assertFalse(d['HMS'](-10))
@@ -30,22 +42,36 @@ class HSTestCase(AlgorithmTestCase):
 		self.assertFalse(d['b_range'](-10.3))
 
 	def test_custom_works_fine(self):
-		hs_costom = self.algo(seed=self.seed)
-		hs_costomc = self.algo(seed=self.seed)
-		AlgorithmTestCase.test_algorithm_run(self, hs_costom, hs_costomc, MyBenchmark())
+		"""Test case for running algorithm on costume benchmarks."""
+		hs_costom = HarmonySearch(seed=self.seed)
+		hs_costomc = HarmonySearch(seed=self.seed)
+		AlgorithmTestCase.algorithm_run_test(self, hs_costom, hs_costomc, MyBenchmark())
 
 	def test_griewank_works_fine(self):
-		hs_griewank = self.algo(seed=self.seed)
-		hs_griewankc = self.algo(seed=self.seed)
-		AlgorithmTestCase.test_algorithm_run(self, hs_griewank, hs_griewankc)
+		"""Test case for running algorithm on benchmark."""
+		hs_griewank = HarmonySearch(seed=self.seed)
+		hs_griewankc = HarmonySearch(seed=self.seed)
+		AlgorithmTestCase.algorithm_run_test(self, hs_griewank, hs_griewankc)
 
 class HSv1TestCase(AlgorithmTestCase):
-	def setUp(self):
-		AlgorithmTestCase.setUp(self)
-		self.algo = HarmonySearchV1
+	r"""Test case for HarmonySearchv1 algorithm.
+
+	Date:
+		April 2019
+
+	Author:
+		Klemen Berkovič
+
+	See Also:
+		* :class:`NiaPy.algorithms.basic.HarmonySearchv1`
+	"""
+	def test_algorithm_info(self):
+		"""Test case for algorithm info."""
+		self.assertIsNotNone(HarmonySearchV1.algorithmInfo())
 
 	def test_type_parameters(self):
-		d = self.algo.typeParameters()
+		"""Test case for type parameters."""
+		d = HarmonySearchV1.typeParameters()
 		self.assertIsNone(d.get('b_range', None))
 		self.assertIsNotNone(d.get('dw_min', None))
 		self.assertIsNotNone(d.get('dw_max', None))
@@ -55,13 +81,15 @@ class HSv1TestCase(AlgorithmTestCase):
 		self.assertFalse(d['dw_max'](-10))
 
 	def test_custom_works_fine(self):
-		hs_costom = self.algo(seed=self.seed)
-		hs_costomc = self.algo(seed=self.seed)
-		AlgorithmTestCase.test_algorithm_run(self, hs_costom, hs_costomc, MyBenchmark())
+		"""Test case for running algorithm on costume benchmarks."""
+		hs_costom = HarmonySearchV1(seed=self.seed)
+		hs_costomc = HarmonySearchV1(seed=self.seed)
+		AlgorithmTestCase.algorithm_run_test(self, hs_costom, hs_costomc, MyBenchmark())
 
 	def test_griewank_works_fine(self):
-		hs_griewank = self.algo(seed=self.seed)
-		hs_griewankc = self.algo(seed=self.seed)
-		AlgorithmTestCase.test_algorithm_run(self, hs_griewank, hs_griewankc)
+		"""Test case for running algorithm on benchmark."""
+		hs_griewank = HarmonySearchV1(seed=self.seed)
+		hs_griewankc = HarmonySearchV1(seed=self.seed)
+		AlgorithmTestCase.algorithm_run_test(self, hs_griewank, hs_griewankc)
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

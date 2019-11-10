@@ -1,5 +1,4 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, trailing-whitespace, multiple-statements, attribute-defined-outside-init, logging-not-lazy, no-self-use, line-too-long, arguments-differ, bad-continuation
 import logging
 
 from numpy import fabs, inf
@@ -40,9 +39,13 @@ class GreyWolfOptimizer(Algorithm):
 	Name = ['GreyWolfOptimizer', 'GWO']
 
 	@staticmethod
-	def typeParameters(): return {
-			'NP': lambda x: isinstance(x, int) and x > 0
-	}
+	def algorithmInfo():
+		r"""Get basic information of GreyWolfOptimizer algorithm.
+
+		Returns:
+			str: Basic information.
+		"""
+		return r"""Mirjalili, Seyedali, Seyed Mohammad Mirjalili, and Andrew Lewis. "Grey wolf optimizer." Advances in engineering software 69 (2014): 46-61."""
 
 	def setParameters(self, NP=25, **ukwargs):
 		r"""Set the algorithm parameters.
@@ -62,11 +65,16 @@ class GreyWolfOptimizer(Algorithm):
 			task (Task): Optimization task.
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, Dict[str, Any]]:
+			Tuple[numpy.ndarray, numpy.ndarray[float], Dict[str, Any]]:
 				1. Initialized population.
 				2. Initialized populations fitness/function values.
 				3. Additional arguments:
-					* A (): TODO
+					* A (numpy.ndarray): Alpha wolf.
+					* A_f (float): Alpha wolf fitness/function value.
+					* B (numpy.ndarray): Beta wolf.
+					* B_f (float): Beta wolf fitness/function value.
+					* D (numpy.ndarray): Delta wolf.
+					* D_f (float): Delta wolf fitness/function value.
 
 		See Also:
 			* :func:`NiaPy.algorithms.Algorithm.initPopulation`
@@ -86,7 +94,7 @@ class GreyWolfOptimizer(Algorithm):
 		Args:
 			task (Task): Optimization task.
 			pop (numpy.ndarray): Current population.
-			fpop (numpy.ndarray): Current populations function/fitness values.
+			fpop (numpy.ndarray[float]): Current populations function/fitness values.
 			xb (numpy.ndarray):
 			fxb (float):
 			A (numpy.ndarray):
@@ -98,11 +106,18 @@ class GreyWolfOptimizer(Algorithm):
 			**dparams (Dict[str, Any]): Additional arguments.
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, float, Dict[str, Any]]:
+			Tuple[numpy.ndarray, numpy.ndarray[float], numpy.ndarray, float, Dict[str, Any]]:
 				1. New population
 				2. New population fitness/function values
-				3. Additional arguments:
-					* A (): TODO
+				3. New global best position.
+				3. New global best positions function/fitness value.
+				5. Additional arguments:
+					* A (numpy.ndarray): Alpha wolf.
+					* A_f (float): Alpha wolf fitness/function value.
+					* B (numpy.ndarray): Beta wolf.
+					* B_f (float): Beta wolf fitness/function value.
+					* D (numpy.ndarray): Delta wolf.
+					* D_f (float): Delta wolf fitness/function value.
 		"""
 		a = 2 - task.Evals * (2 / task.nFES)
 		for i, w in enumerate(pop):
@@ -114,11 +129,9 @@ class GreyWolfOptimizer(Algorithm):
 			X3 = D - A3 * fabs(C3 * D - w)
 			pop[i] = task.repair((X1 + X2 + X3) / 3, self.Rand)
 			fpop[i] = task.eval(pop[i])
-		for i, f in enumerate(fpop):
-			if f < A_f: A, A_f = pop[i].copy(), f
-			elif A_f < f < B_f: B, B_f = pop[i].copy(), f
-			elif B_f < f < D_f: D, D_f = pop[i].copy(), f
-		xb, fxb = self.getBest(A, A_f, xb, fxb)
-		return pop, fpop, xb, fxb, {'A': A, 'A_f': A_f, 'B': B, 'B_f': B_f, 'D': D, 'D_f': D_f}
+			if fpop[i] < A_f: A, A_f = pop[i].copy(), fpop[i]
+			elif A_f < fpop[i] < B_f: B, B_f = pop[i], fpop[i]
+			elif B_f < fpop[i] < D_f: D, D_f = pop[i], fpop[i]
+		return pop, fpop, A, A_f, {'A': A, 'A_f': A_f, 'B': B, 'B_f': B_f, 'D': D, 'D_f': D_f}
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

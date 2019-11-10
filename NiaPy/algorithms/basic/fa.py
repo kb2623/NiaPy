@@ -1,5 +1,4 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, trailing-whitespace, multiple-statements, attribute-defined-outside-init, logging-not-lazy, redefined-builtin, line-too-long, no-self-use, arguments-differ, no-else-return, bad-continuation
 import logging
 
 from numpy import argsort, sum, exp, apply_along_axis, asarray, where
@@ -52,13 +51,13 @@ class FireflyAlgorithm(Algorithm):
 
 	@staticmethod
 	def typeParameters():
-		r"""TODO.
+		r"""Get dictionary with functions for checking values of parameters.
 
 		Returns:
 			Dict[str, Callable]:
-				* alpha (Callable[[Union[float, int]], bool]): TODO.
-				* betamin (Callable[[Union[float, int]], bool]): TODO.
-				* gamma (Callable[[Union[float, int]], bool]): TODO.
+				* alpha (Callable[[Union[float, int]], bool])
+				* betamin (Callable[[Union[float, int]], bool])
+				* gamma (Callable[[Union[float, int]], bool])
 
 		See Also:
 			* :func:`NiaPy.algorithms.Algorithm.typeParameters`
@@ -151,18 +150,18 @@ class FireflyAlgorithm(Algorithm):
 		Args:
 			task (Task): Optimization task.
 			Fireflies (numpy.ndarray): Current population.
-			Intensity (numpy.ndarray): Current population function/fitness values.
+			Intensity (numpy.ndarray[float]): Current population function/fitness values.
 			xb (numpy.ndarray): Global best individual.
 			fxb (float): Global best individual fitness/function value.
 			alpha (float): TODO.
 			**dparams (Dict[str, Any]): Additional arguments.
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, float, Dict[str, Any]]:
+			Tuple[numpy.ndarray, numpy.ndarray[float], numpy.ndarray, float, Dict[str, Any]]:
 				1. New population.
 				2. New population fitness/function values.
-				3. New global best solution
-				4. New global best solutions fitness/objective value
+				3. New global best position.
+				4. New global best positions fitness/function value.
 				5. Additional arguments:
 					* alpha (float): TODO
 

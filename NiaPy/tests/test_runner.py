@@ -1,19 +1,17 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, line-too-long, multiple-statements
 from unittest import TestCase
 
 import NiaPy
-from NiaPy.benchmarks import Benchmark
 
-class MyBenchmark(Benchmark):
+class MyBenchmark:
 	def __init__(self):
-		Benchmark.__init__(self, -11, 11)
+		self.Lower = -11
+		self.Upper = 11
 
-	@classmethod
-	def function(cls):
-		def evaluate(D, sol):
+	def function(self):
+		def evaluate(sol):
 			val = 0.0
-			for i in range(D): val = val + sol[i] * sol[i]
+			for i in range(len(sol)): val = val + sol[i] * sol[i]
 			return val
 		return evaluate
 
@@ -23,12 +21,12 @@ class RunnerTestCase(TestCase):
 		self.benchmarks = ['griewank', MyBenchmark()]
 
 	def test_runner_works_fine(self):
-		self.assertTrue(NiaPy.Runner(7, 100, 2, self.algorithms, self.benchmarks).run())
+		self.assertTrue(NiaPy.Runner(4, 500, 10, 4, useAlgorithms=self.algorithms, useBenchmarks=self.benchmarks).run())
 
 	def test_runner_bad_algorithm_thorws_fine(self):
-		self.assertRaises(TypeError, lambda: NiaPy.Runner(4, 10, 3, 'EvolutionStrategy', self.benchmarks).run())
+		self.assertRaises(TypeError, lambda: NiaPy.Runner(4, 10, 3, 2, 'EvolutionStrategy', self.benchmarks).run())
 
 	def test_runner_bad_benchmark_thorws_fine(self):
-		self.assertRaises(TypeError, lambda: NiaPy.Runner(4, 10, 3, 'EvolutionStrategy1p1', 'TesterMan').run())
+		self.assertRaises(TypeError, lambda: NiaPy.Runner(4, 10, 3, 2, 'EvolutionStrategy1p1', 'TesterMan').run())
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

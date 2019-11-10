@@ -1,93 +1,80 @@
 # encoding=utf8
-# pylint: disable=anomalous-backslash-in-string
 
-"""Implementaiton of Qing funcion."""
+"""Implementation of Quing benchmark."""
+from typing import Callable, Union, List
 
-import math
+import numpy as np
+
 from NiaPy.benchmarks.benchmark import Benchmark
+from .functions import qing_function
 
-__all__ = ['Qing']
+__all__ = ["Qing"]
 
 class Qing(Benchmark):
-    r"""Implementation of Qing function.
+	r"""Implementation of Qing function.
 
-    Date: 2018
+	Date:
+		2018
 
-    Author: Lucija Brezočnik
+	Author:
+		Lucija Brezočnik
 
-    License: MIT
+	License:
+		MIT
 
-    Function: **Qing function**
+	Function:
+		Qing function
 
-        :math:`f(\mathbf{x}) = \sum_{i=1}^D \left(x_i^2 - i\right)^2`
+		:math:`f(\mathbf{x}) = \sum_{i=1}^D \left(x_i^2 - i\right)^2`
 
-        **Input domain:**
-        The function can be defined on any input domain but it is usually
-        evaluated on the hypercube :math:`x_i ∈ [-500, 500]`, for all :math:`i = 1, 2,..., D`.
+		Input domain:
+			The function can be defined on any input domain but it is usually evaluated on the hypercube :math:`x_i ∈ [-500, 500]`, for all :math:`i = 1, 2,..., D`.
 
-        **Global minimum:** :math:`f(x^*) = 0`, at :math:`x^* = (\pm √i))`
+		Global minimum:
+			:math:`f(x^*) = 0`, at :math:`x^* = (\pm √i))`
 
-    LaTeX formats:
-        Inline:
-                $f(\mathbf{x}) = \sum_{i=1}^D \left (x_i^2 - i\right)^2$
+	LaTeX formats:
+		Inline:
+			$f(\mathbf{x}) = \sum_{i=1}^D \left (x_i^2 - i\right)^2$
 
-        Equation:
-                \begin{equation} f(\mathbf{x}) =
-                \sum_{i=1}^D \left{(x_i^2 - i\right)}^2 \end{equation}
+		Equation:
+			\begin{equation} f(\mathbf{x}) = \sum_{i=1}^D \left{(x_i^2 - i\right)}^2 \end{equation}
 
-        Domain:
-                $-500 \leq x_i \leq 500$
+		Domain:
+			$-500 \leq x_i \leq 500$
 
-    Reference paper:
-        Jamil, M., and Yang, X. S. (2013).
-        A literature survey of benchmark functions for global optimisation problems.
-        International Journal of Mathematical Modelling and Numerical Optimisation,
-        4(2), 150-194.
-    """
-    Name = ['Qing']
+	Reference paper:
+		Jamil, M., and Yang, X. S. (2013). A literature survey of benchmark functions for global optimisation problems. International Journal of Mathematical Modelling and Numerical Optimisation, 4(2), 150-194.
+	"""
+	Name: List[str] = ["Qing"]
 
-    def __init__(self, Lower=-500.0, Upper=500.0):
-        r"""Initialize of Qing benchmark.
+	def __init__(self, Lower: Union[int, float, np.ndarray] = -500.0, Upper: Union[int, float, np.ndarray] = 500.0) -> None:
+		"""Initialize Quing benchmark.
 
-        Args:
-            Lower (Optional[float]): Lower bound of problem.
-            Upper (Optional[float]): Upper bound of problem.
+		Args:
+			Lower: Lower bound of problem.
+			Upper: Upper bound of problem.
 
-        See Also:
-            :func:`NiaPy.benchmarks.Benchmark.__init__`
-        """
-        Benchmark.__init__(self, Lower, Upper)
+		See Also:
+			* :func:`NiaPy.benchmarks.Benchmark.__init__`
+		"""
+		Benchmark.__init__(self, Lower, Upper)
 
-    @staticmethod
-    def latex_code():
-        r"""Return the latex code of the problem.
+	@staticmethod
+	def latex_code() -> str:
+		"""Return the latex code of the problem.
 
-        Returns:
-            str: Latex code
-        """
-        return r'''$f(\mathbf{x}) = \sum_{i=1}^D \left (x_i^2 - i\right)^2$'''
+		Returns:
+			Latex code.
+		"""
+		return r'''$f(\mathbf{x}) = \sum_{i=1}^D \left (x_i^2 - i\right)^2$'''
 
-    def function(self):
-        r"""Return benchmark evaluation function.
+	def function(self) -> Callable[[np.ndarray, dict], float]:
+		"""Return benchmark evaluation function.
 
-        Returns:
-            Callable[[int, Union[int, float, List[int, float], numpy.ndarray]], float]: Fitness function
-        """
-        def evaluate(D, sol):
-            r"""Fitness function.
+		Returns:
+			 Evaluation function.
+		"""
+		return lambda x, **a: qing_function(x)
 
-            Args:
-                D (int): Dimensionality of the problem
-                sol (Union[int, float, List[int, float], numpy.ndarray]): Solution to check.
-
-            Returns:
-                float: Fitness value for the solution.
-            """
-            val = 0.0
-
-            for i in range(D):
-                val += math.pow(math.pow(sol[i], 2) - i, 2)
-
-            return val
-
-        return evaluate
+# vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

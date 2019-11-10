@@ -18,9 +18,13 @@ import logging
 
 import setuptools
 
+from Cython.Build import cythonize
+from setuptools.extension import Extension
+
+import numpy
 
 PACKAGE_NAME = 'NiaPy'
-MINIMUM_PYTHON_VERSION = '2.7'
+MINIMUM_PYTHON_VERSION = '3.5'
 
 
 def check_python_version():
@@ -52,6 +56,17 @@ def build_description():
         return readme  # return readme + '\n' + changelog
 
 
+benchmark_functions = [
+    Extension(
+        'NiaPy.benchmarks.functions',
+        ['functions/benchmark_functions.pyx', 'functions/bfuncs.c'],
+        library_dirs=["functions"],
+        include_dirs=[numpy.get_include(), 'functions'],
+        extra_compile_args=['-w', '-O3', '-march=native'],
+        language='c',
+    )
+]
+
 check_python_version()
 
 PACKAGE_VERSION = read_package_variable('__version__')
@@ -75,9 +90,8 @@ setuptools.setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering',
@@ -91,10 +105,18 @@ setuptools.setup(
         'coverage-space ~= 1.0.2'
     ],
     install_requires=[
-        'numpy >= 1.16.2',
-        'scipy >= 1.1.0',
-        'enum34 >= 1.1.6',
-        'xlsxwriter >= 1.1.5',
-        'matplotlib >= 2.2.4',
-    ]
+        'numpy >= 1.16.4',
+        'scipy >= 1.3.0',
+        'xlsxwriter >= 1.1.8',
+        'matplotlib >= 3.1.1',
+        'cython >= 0.29.12',
+        'scikit-learn >= 0.21.2',
+        'pandas >= 0.24.2',
+    ],
+    package_data={
+        '': ['*.csv'],
+        read_package_variable('__project__'): ['data/*.csv'],
+    },
+    ext_modules=cythonize(benchmark_functions),
+    package_dir={read_package_variable(__name__): 'functions'},
 )

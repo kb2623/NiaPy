@@ -4,18 +4,22 @@ from NiaPy.tests.test_algorithm import AlgorithmTestCase, MyBenchmark
 from NiaPy.algorithms.basic import CoralReefsOptimization
 
 class CROTestCase(AlgorithmTestCase):
-	def setUp(self):
-		AlgorithmTestCase.setUp(self)
-		self.algo = CoralReefsOptimization
+	def test_algorithm_info_fine(self):
+		i = CoralReefsOptimization.algorithmInfo()
+		self.assertIsNotNone(i)
+
+	def test_type_parameters_fine(self):
+		d = CoralReefsOptimization.typeParameters()
+		self.assertIsNotNone(d)
 
 	def test_custom_works_fine(self):
-		cro_custom = self.algo(N=20, seed=self.seed)
-		cro_customc = self.algo(N=20, seed=self.seed)
-		AlgorithmTestCase.test_algorithm_run(self, cro_custom, cro_customc, MyBenchmark())
+		cro_custom = CoralReefsOptimization(N=20, seed=self.seed)
+		cro_customc = CoralReefsOptimization(N=20, seed=self.seed)
+		AlgorithmTestCase.algorithm_run_test(self, cro_custom, cro_customc, MyBenchmark())
 
 	def test_griewank_works_fine(self):
-		cro_griewank = self.algo(N=10, seed=self.seed)
-		cro_griewankc = self.algo(N=10, seed=self.seed)
-		AlgorithmTestCase.test_algorithm_run(self, cro_griewank, cro_griewankc)
+		cro_griewank = CoralReefsOptimization(N=10, seed=self.seed)
+		cro_griewankc = CoralReefsOptimization(N=10, seed=self.seed)
+		AlgorithmTestCase.algorithm_run_test(self, cro_griewank, cro_griewankc)
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

@@ -1,5 +1,4 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, trailing-whitespace, multiple-statements, attribute-defined-outside-init, logging-not-lazy, arguments-differ, line-too-long, redefined-builtin, singleton-comparison, no-self-use, bad-continuation
 import logging
 from scipy.spatial.distance import euclidean as ed
 from numpy import apply_along_axis, argmin, argmax, sum, full, inf, asarray, mean, where, sqrt
@@ -52,6 +51,15 @@ class KrillHerd(Algorithm):
 		* :class:`NiaPy.algorithms.algorithm.Algorithm`
 	"""
 	Name = ['KrillHerd', 'KH']
+
+	@staticmethod
+	def algorithmInfo():
+		r"""Get basic information of KrillHerd algorithm.
+
+		Returns:
+			str: Basic information.
+		"""
+		return r"""Amir Hossein Gandomi, Amir Hossein Alavi, Krill herd: A new bio-inspired optimization algorithm, Communications in Nonlinear Science and Numerical Simulation, Volume 17, Issue 12, 2012, Pages 4831-4845, ISSN 1007-5704, https://doi.org/10.1016/j.cnsns.2012.05.010."""
 
 	@staticmethod
 	def typeParameters():
@@ -112,28 +120,6 @@ class KrillHerd(Algorithm):
 		"""
 		Algorithm.setParameters(self, NP=NP, **ukwargs)
 		self.N_max, self.V_f, self.D_max, self.C_t, self.W_n, self.W_f, self.d_s, self.nn, self._Cr, self._Mu, self.epsilon = N_max, V_f, D_max, C_t, W_n, W_f, d_s, nn, Cr, Mu, epsilon
-
-	def getParameters(self):
-		r"""Get parameter values for the algorithm.
-
-		Returns:
-			Dict[str, Any]: TODO.
-		"""
-		d = Algorithm.getParameters(self)
-		d.update({
-			'N_max': self.N_max,
-			'V_f': self.V_f,
-			'D_max': self.D_max,
-			'C_t': self.C_t,
-			'W_n': self.W_n,
-			'W_f': self.W_f,
-			'd_s': self.d_s,
-			'nn': self.nn,
-			'Cr': self.Cr,
-			'Mu': self.Mu,
-			'epsilon': self.epsilon
-		})
-		return d
 
 	def initWeights(self, task):
 		r"""Initialize weights.
@@ -347,7 +333,7 @@ class KrillHerd(Algorithm):
 			task (Task): Optimization task.
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, Dict[str, Any]]:
+			Tuple[numpy.ndarray, numpy.ndarray[float], Dict[str, Any]]:
 				1. Initialized population.
 				2. Initialized populations function/fitness values.
 				3. Additional arguments:
@@ -381,12 +367,10 @@ class KrillHerd(Algorithm):
 			**dparams (Dict[str, Any]): Additional arguments.
 
 		Returns:
-			Tuple [numpy.ndarray, numpy.ndarray, numpy.ndarray, float Dict[str, Any]]:
+			Tuple [numpy.ndarray, numpy.ndarray[float], Dict[str, Any]]:
 				1. New herd/population
 				2. New herd/populations function/fitness values.
-				3. New global best solution.
-				4. New global best solutoins fitness/objective value.
-				5. Additional arguments:
+				3. Additional arguments:
 					* W_n (numpy.ndarray): --
 					* W_f (numpy.ndarray): --
 					* N (numpy.ndarray): --
@@ -394,7 +378,7 @@ class KrillHerd(Algorithm):
 		"""
 		ikh_b, ikh_w = argmin(KH_f), argmax(KH_f)
 		x_food, x_food_f = self.getFoodLocation(KH, KH_f, task)
-		if x_food_f < fxb: xb, fxb = x_food, x_food_f  # noqa: F841
+		if x_food_f < fxb: xb, fxb = x_food, x_food_f
 		N = asarray([self.induceNeighborsMotion(i, N[i], W_n, KH, KH_f, ikh_b, ikh_w, task) for i in range(self.NP)])
 		F = asarray([self.induceForagingMotion(i, x_food, x_food_f, F[i], W_f, KH, KH_f, ikh_b, ikh_w, task) for i in range(self.NP)])
 		D = asarray([self.inducePhysicalDiffusion(task) for i in range(self.NP)])
@@ -405,7 +389,6 @@ class KrillHerd(Algorithm):
 		KH_n = asarray([self.mutate(KH_n[i], KH[ikh_b], Mu[i]) for i in range(self.NP)])
 		KH = apply_along_axis(task.repair, 1, KH_n, rnd=self.Rand)
 		KH_f = apply_along_axis(task.eval, 1, KH)
-		xb, fxb = self.getBest(KH, KH_f, xb, fxb)
 		return KH, KH_f, xb, fxb, {'W_n': W_n, 'W_f': W_f, 'N': N, 'F': F}
 
 class KrillHerdV4(KrillHerd):
@@ -467,7 +450,7 @@ class KrillHerdV4(KrillHerd):
 		See Also:
 			* :func:NiaPy.algorithms.basic.kh.KrillHerd.KrillHerd.setParameters`
 		"""
-		KrillHerd.setParameters(self, NP=NP, N_max=N_max, V_f=V_f, D_max=D_max, C_t=C_t, W_n=W_n, W_f=W_f, d_s=d_s, nn=4, Cr=0.2, Mu=0.05, epsilon=1e-31, **ukwargs)
+		KrillHerd.setParameters(self, NP, N_max, V_f, D_max, C_t, W_n, W_f, d_s, 4, 0.2, 0.05, 1e-31, **ukwargs)
 
 class KrillHerdV1(KrillHerd):
 	r"""Implementation of krill herd algorithm.
@@ -794,7 +777,7 @@ class KrillHerdV11(KrillHerd):
 		w = full(task.D, 0.1 + 0.8 * (1 - task.Iters / task.nGEN))
 		ib, iw = argmin(KH_f), argmax(KH_f)
 		x_food, x_food_f = self.getFoodLocation(KH, KH_f, task)
-		xb, fxb = self.getBest(x_food, x_food_f, xb, fxb)
+		if x_food_f < fxb: xb, fxb = x_food, x_food_f
 		N = asarray([self.Neighbors(i, KH, KH_f, iw, ib, N[i], w, task) for i in range(self.NP)])
 		F = asarray([self.Foraging(KH[i], KH_f[i], KHo[i], KHo_f[i], w, F[i], KH_f[iw], KH_f[ib], x_food, x_food_f, task) for i in range(self.NP)])
 		Cr = asarray([self.Cr(KH_f[i], KH_f[ib], KH_f[iw]) for i in range(self.NP)])
@@ -803,7 +786,6 @@ class KrillHerdV11(KrillHerd):
 		KH = apply_along_axis(task.repair, 1, KH_n, self.Rand)
 		KH_f = apply_along_axis(task.eval, 1, KH)
 		KHo, KHo_f = self.ElitistSelection(KH, KH_f, KHo, KHo_f)
-		xb, fxb = self.getBest(KH, KH_f, xb, fxb)
 		return KH, KH_f, xb, fxb, {'KHo': KHo, 'KHo_f': KHo_f, 'N': N, 'F': F, 'Dt': Dt}
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

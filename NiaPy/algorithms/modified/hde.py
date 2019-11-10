@@ -1,6 +1,4 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, bad-continuation, line-too-long, multiple-statements, arguments-differ, too-many-ancestors
-
 import logging
 
 from numpy import argsort
@@ -45,6 +43,31 @@ class MtsIndividual(Individual):
 		if SR is None and task is not None: self.SR = task.bRange / 4
 		else: self.SR = SR
 
+	def attrs(self):
+		r"""Get attributes of object.
+
+		Returns:
+			Dict[str, Any]: Attributes of object.
+		"""
+		d = Individual.attrs(self)
+		d.update({
+			'SR': self.SR,
+			'grade': self.grade,
+			'enable': self.enable,
+			'improved': self.improved
+		})
+		return d
+
+	def copy(self):
+		r"""Return a copy of self.
+
+		Method returns copy of ``this`` object so it is safe for editing.
+
+		Returns:
+			MtsIndividual: Copy of self.
+		"""
+		return MtsIndividual(**self.attrs())
+
 class DifferentialEvolutionMTS(DifferentialEvolution, MultipleTrajectorySearch):
 	r"""Implementation of Differential Evolution with MTS local searches.
 
@@ -81,9 +104,9 @@ class DifferentialEvolutionMTS(DifferentialEvolution, MultipleTrajectorySearch):
 
 		Returns:
 			Dict[str, Callable]:
-				* NoLsTests (Callable[[int], bool]): TODO
-				* NoLs (Callable[[int], bool]): TODO
-				* NoEnabled (Callable[[int], bool]): TODO
+				* NoLsTests (Callable[[int], bool])
+				* NoLs (Callable[[int], bool])
+				* NoEnabled (Callable[[int], bool])
 
 		See Also:
 			:func:`NiaPy.algorithms.basic.de.DifferentialEvolution.typeParameters`
@@ -109,30 +132,25 @@ class DifferentialEvolutionMTS(DifferentialEvolution, MultipleTrajectorySearch):
 		self.LSs, self.NoLsTests, self.NoLs, self.NoEnabled = LSs, NoLsTests, NoLs, NoEnabled
 		self.BONUS1, self.BONUS2 = BONUS1, BONUS2
 
-	def getParameters(self):
-		d = DifferentialEvolution.getParameters(self)
-		# TODO add parameter values to dictionary
-		return d
-
-	def postSelection(self, X, task, xb, fxb, **kwargs):
+	def postSelection(self, X, task, xb, **kwargs):
 		r"""Post selection operator.
 
 		Args:
-			X (numpy.ndarray): Current populaiton.
+			X (numpy.ndarray[Individual]): Current populaiton.
 			task (Task): Optimization task.
-			xb (numpy.ndarray): Global best individual.
+			xb (Individual): Global best individual.
 			**kwargs (Dict[str, Any]): Additional arguments.
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, float]: New population.
+			numpy.ndarray[Individual]: New population.
 		"""
 		for x in X:
 			if not x.enable: continue
 			x.enable, x.grades = False, 0
-			x.x, x.f, xb, fxb, k = self.GradingRun(x.x, x.f, xb, fxb, x.improved, x.SR, task)
-			x.x, x.f, xb, fxb, x.improved, x.SR, x.grades = self.LsRun(k, x.x, x.f, xb, fxb, x.improved, x.SR, 0, task)
+			x.x, x.f, xb.x, xb.f, k = self.GradingRun(x.x, x.f, xb.x, xb.f, x.improved, x.SR, task)
+			x.x, x.f, xb.x, xb.f, x.improved, x.SR, x.grade = self.LsRun(k, x.x, x.f, xb.x, xb.f, x.improved, x.SR, xb.grade, task)
 		for i in X[argsort([x.grade for x in X])[:self.NoEnabled]]: i.enable = True
-		return X, xb, fxb
+		return X
 
 class DifferentialEvolutionMTSv1(DifferentialEvolutionMTS):
 	r"""Implementation of Differential Evolution withm MTSv1 local searches.
@@ -207,10 +225,10 @@ class DynNpDifferentialEvolutionMTS(DifferentialEvolutionMTS, DynNpDifferentialE
 		DynNpDifferentialEvolution.setParameters(self, pmax=pmax, rp=rp, **ukwargs)
 		DifferentialEvolutionMTS.setParameters(self, **ukwargs)
 
-	def postSelection(self, X, task, xb, fxb, **kwargs):
-		nX, xb, fxb = DynNpDifferentialEvolution.postSelection(self, X, task, xb, fxb)
-		nX, xb, fxb = DifferentialEvolutionMTS.postSelection(self, nX, task, xb, fxb)
-		return nX, xb, fxb
+	def postSelection(self, X, task, xb, **kwargs):
+		nX = DynNpDifferentialEvolution.postSelection(self, X, task)
+		nX = DifferentialEvolutionMTS.postSelection(self, nX, task, xb)
+		return nX
 
 class DynNpDifferentialEvolutionMTSv1(DynNpDifferentialEvolutionMTS):
 	r"""Implementation of Differential Evolution withm MTSv1 local searches and dynamic population size.
@@ -283,19 +301,23 @@ class MultiStrategyDifferentialEvolutionMTS(DifferentialEvolutionMTS, MultiStrat
 		DifferentialEvolutionMTS.setParameters(self, **ukwargs)
 		MultiStrategyDifferentialEvolution.setParameters(self, itype=ukwargs.pop('itype', MtsIndividual), **ukwargs)
 
-	def evolve(self, pop, xb, task, **kwargs):
+	def evolve(self, pop, xb, fxb, task, **kwargs):
 		r"""Evolve population.
 
 		Args:
 			pop (numpy.ndarray[Individual]): Current population of individuals.
-			xb (Individual): Global best individual.
+			xb (numpy.ndarray): Global best position.
+			fxb (float): Global best fitness/function value.
 			task (Task): Optimization task.
 			**kwargs (Dict[str, Any]): Additional arguments.
 
 		Returns:
-			numpy.ndarray[Individual]: Evolved population.
+			Tuple[numpy.ndarray[Individual], numpy.ndarray, float]:
+				1. Evolved population.
+				2. New global best position.
+				3. New global best function/fitness value.
 		"""
-		return MultiStrategyDifferentialEvolution.evolve(self, pop, xb, task, **kwargs)
+		return MultiStrategyDifferentialEvolution.evolve(self, pop, xb, fxb, task, **kwargs)
 
 class MultiStrategyDifferentialEvolutionMTSv1(MultiStrategyDifferentialEvolutionMTS):
 	r"""Implementation of Differential Evolution with MTSv1 local searches and multiple mutation strategys.

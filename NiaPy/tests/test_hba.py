@@ -1,21 +1,54 @@
-# encoding=utf8
-# pylint: disable=line-too-long, mixed-indentation
+# pylint: disable=line-too-long
 from NiaPy.tests.test_algorithm import AlgorithmTestCase, MyBenchmark
 from NiaPy.algorithms.modified import HybridBatAlgorithm
 
 class HBATestCase(AlgorithmTestCase):
-	def setUp(self):
-		AlgorithmTestCase.setUp(self)
-		self.algo = HybridBatAlgorithm
+	r"""Test case for HybridBatAlgorithm algorithm.
+
+	Date:
+		April 2019
+
+	Author:
+		Klemen Berkovič
+
+	See Also:
+		* :class:`NiaPy.algorithms.modified.HybridBatAlgorithm`
+	"""
+	def test_algorithm_info(self):
+		"""Test algorithm info method of class HybridBatAlgorithm."""
+		self.assertIsNotNone(HybridBatAlgorithm.algorithmInfo())
+
+	def test_type_parameters(self):
+		"""Test type parameters method of class HybridBatAlgorithm."""
+		d = HybridBatAlgorithm.typeParameters()
+		# Test NP parameter check
+		self.assertIsNotNone(d.get('NP', None))
+		self.assertFalse(d['NP'](-10))
+		self.assertFalse(d['NP'](-.0))
+		self.assertFalse(d['NP'](.0))
+		self.assertTrue(d['NP'](3))
+		self.assertTrue(d['NP'](300))
+		# Test F parameter check
+		self.assertIsNotNone(d.get('F', None))
+		self.assertFalse(d['F'](-30))
+		self.assertFalse(d['F'](-.3))
+		self.assertTrue(d['F'](.3))
+		self.assertTrue(d['F'](.39))
+		# Test CR parameter check
+		self.assertIsNotNone(d.get('CR', None))
+		self.assertFalse(d['CR'](10))
+		self.assertFalse(d['CR'](-10))
+		self.assertFalse(d['CR'](-1))
+		self.assertTrue(d['CR'](.3))
+		self.assertTrue(d['CR'](.0))
+		self.assertTrue(d['CR'](1.))
 
 	def test_custom_works_fine(self):
-		hba_custom = self.algo(NP=40, A=0.5, r=0.5, F=0.5, CR=0.9, Qmin=0.0, Qmax=2.0, seed=self.seed)
-		hba_customc = self.algo(NP=40, A=0.5, r=0.5, F=0.5, CR=0.9, Qmin=0.0, Qmax=2.0, seed=self.seed)
-		AlgorithmTestCase.test_algorithm_run(self, hba_custom, hba_customc, MyBenchmark())
+		hba_custom = HybridBatAlgorithm(NP=40, A=0.5, r=0.5, F=0.5, CR=0.9, Qmin=0.0, Qmax=2.0, seed=self.seed)
+		hba_customc = HybridBatAlgorithm(NP=40, A=0.5, r=0.5, F=0.5, CR=0.9, Qmin=0.0, Qmax=2.0, seed=self.seed)
+		AlgorithmTestCase.algorithm_run_test(self, hba_custom, hba_customc, MyBenchmark())
 
 	def test_griewank_works_fine(self):
-		hba_griewank = self.algo(NP=40, A=0.5, r=0.5, F=0.5, CR=0.9, Qmin=0.0, Qmax=2.0, seed=self.seed)
-		hba_griewankc = self.algo(NP=40, A=0.5, r=0.5, F=0.5, CR=0.9, Qmin=0.0, Qmax=2.0, seed=self.seed)
-		AlgorithmTestCase.test_algorithm_run(self, hba_griewank, hba_griewankc)
-
-# vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3
+		hba_griewank = HybridBatAlgorithm(NP=40, A=0.5, r=0.5, F=0.5, CR=0.9, Qmin=0.0, Qmax=2.0, seed=self.seed)
+		hba_griewankc = HybridBatAlgorithm(NP=40, A=0.5, r=0.5, F=0.5, CR=0.9, Qmin=0.0, Qmax=2.0, seed=self.seed)
+		AlgorithmTestCase.algorithm_run_test(self, hba_griewank, hba_griewankc)

@@ -1,13 +1,8 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, line-too-long, multiple-statements, too-many-function-args
-
-"""Argparser class."""
-
-import sys
 import logging
 from argparse import ArgumentParser
 from numpy import inf
-from NiaPy.task.task import OptimizationType
+from NiaPy.util.utility import OptimizationType
 import NiaPy.benchmarks as bencs
 
 logging.basicConfig()
@@ -16,9 +11,7 @@ logger.setLevel('INFO')
 
 __all__ = ['MakeArgParser', 'getArgs', 'getDictArgs']
 
-def makeCbechs():
-	r"""Make benchmarks."""
-	return bencs.__all__
+def makeCbechs(): return bencs.__all__
 
 def optimizationType(x):
 	r"""Map function for optimization type.
@@ -111,10 +104,5 @@ def getDictArgs(argv):
 		* :func:`NiaPy.utils.getArgs`
 	"""
 	return vars(getArgs(argv))
-
-if __name__ == '__main__':
-	r"""Run the algorithms based on parameters from the command line interface."""
-	args = getArgs(sys.argv[1:])
-	logger.info(str(args))
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

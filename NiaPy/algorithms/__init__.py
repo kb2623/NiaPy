@@ -1,13 +1,12 @@
 # encoding=utf8
-
+# pylint: disable=bad-continuation
 """Module with implementations of basic and hybrid algorithms."""
 
 from NiaPy.algorithms import basic
 from NiaPy.algorithms import modified
 from NiaPy.algorithms import other
 from NiaPy.algorithms.algorithm import Algorithm, Individual, defaultNumPyInit, defaultIndividualInit
-from NiaPy.algorithms.statistics import BasicStatistics
-from NiaPy.algorithms.utility import AlgorithmUtility
+from NiaPy.algorithms.statistics import BasicStatistics, wilcoxonTest, friedmanNemenyi, wilcoxonSignedRanks, friedmanRanks
 
 __all__ = [
 	'basic',
@@ -18,5 +17,8 @@ __all__ = [
 	'defaultIndividualInit',
 	'Individual',
 	'BasicStatistics',
-	'AlgorithmUtility'
+	'wilcoxonTest',
+	'friedmanNemenyi',
+	'wilcoxonSignedRanks',
+	'friedmanRanks'
 ]

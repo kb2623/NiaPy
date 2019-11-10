@@ -1,5 +1,4 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, trailing-whitespace, multiple-statements, attribute-defined-outside-init, logging-not-lazy, unused-argument, arguments-differ, bad-continuation
 import logging
 
 from numpy import exp
@@ -16,8 +15,8 @@ def coolDelta(currentT, T, deltaT, nFES, **kwargs):
 	r"""Calculate new temperature by differences.
 
 	Args:
-		currentT (float):
-		T (float):
+		currentT (float): Current temperature.
+		T (float): Max temperature.
 		kwargs (Dict[str, Any]): Additional arguments.
 
 	Returns:
@@ -25,13 +24,13 @@ def coolDelta(currentT, T, deltaT, nFES, **kwargs):
 	"""
 	return currentT - deltaT
 
-def coolLinear(currentT, T, deltaT, nFES, **kwargs):
+def coolLinear(currentT, T, nFES, **kwargs):
 	r"""Calculate temperature with linear function.
 
 	Args:
 		currentT (float): Current temperature.
-		T (float):
-		deltaT (float):
+		T (float): Max temperature.
+		deltaT (float): Change in temperature.
 		nFES (int): Number of evaluations done.
 		kwargs (Dict[str, Any]): Additional arguments.
 
@@ -56,15 +55,17 @@ class SimulatedAnnealing(Algorithm):
 		MIT
 
 	Reference URL:
+		https://pdfs.semanticscholar.org/e893/4a942f06ee91940ab57732953ec6a24b3f00.pdf
 
 	Reference paper:
+		S. Kirkpatrick, C. D. Gelatt Jr., and M. P. Vecchi, “Optimization by simulated annealing,” Science, vol. 220, no. 4598, pp. 671–680, 1983.
 
 	Attributes:
 		Name (List[str]): List of strings representing algorithm name.
 		delta (float): Movement for neighbour search.
 		T (float); Starting temperature.
 		deltaT (float): Change in temperature.
-		coolingMethod (Callable): Neighbourhood function.
+		coolingMethod (Callable[[float, float, Dict[str, Any]], float]): Neighbourhood function.
 		epsilon (float): Error value.
 
 	See Also:
@@ -82,7 +83,7 @@ class SimulatedAnnealing(Algorithm):
 		See Also:
 			* :func:`NiaPy.algorithms.Algorithm.algorithmInfo`
 		"""
-		return r"""None"""
+		return r"""S. Kirkpatrick, C. D. Gelatt Jr., and M. P. Vecchi, “Optimization by simulated annealing,” Science, vol. 220, no. 4598, pp. 671–680, 1983."""
 
 	@staticmethod
 	def typeParameters():
@@ -90,14 +91,22 @@ class SimulatedAnnealing(Algorithm):
 
 		Returns:
 			Dict[str, Callable]:
-				* delta (Callable[[Union[float, int], bool]): TODO
+				* delta (Callable[[Union[float, int], bool])
+				* T (Callable[[Union[float, int]], bool])
+				* deltaT (Callable[[Union[float, int]], bool])
+				* epsilon (Callable[Union[float, int]], bool])
+
+		See Also:
+			* :func:`NiaPy.algorithms.Algorithm.typeParameters`
 		"""
-		return {
+		d = Algorithm.typeParameters()
+		d.update({
 			'delta': lambda x: isinstance(x, (int, float)) and x > 0,
 			'T': lambda x: isinstance(x, (int, float)) and x > 0,
 			'deltaT': lambda x: isinstance(x, (int, float)) and x > 0,
 			'epsilon': lambda x: isinstance(x, float) and 0 < x < 1
-		}
+		})
+		return d
 
 	def setParameters(self, delta=0.5, T=2000, deltaT=0.8, coolingMethod=coolDelta, epsilon=1e-23, **ukwargs):
 		r"""Set the algorithm parameters/arguments.
@@ -116,66 +125,18 @@ class SimulatedAnnealing(Algorithm):
 		Algorithm.setParameters(self, NP=1, **ukwargs)
 		self.delta, self.T, self.deltaT, self.cool, self.epsilon = delta, T, deltaT, coolingMethod, epsilon
 
-	def getParameters(self):
-		r"""Get algorithms parametes values.
-
-		Returns:
-			Dict[str, Any]:
-
-		See Also
-			* :func:`NiaPy.algorithms.Algorithm.getParameters`
-		"""
-		d = Algorithm.getParameters(self)
-		d.update({
-			'delta': self.delta,
-			'deltaT': self.deltaT,
-			'T': self.T,
-			'epsilon': self.epsilon
-		})
-		return d
-
 	def initPopulation(self, task):
-		r"""Initialize the starting population.
+		x, xf, d = Algorithm.initPopulation(self, task)
+		d.update({'curT': self.T})
+		return (x[0], xf[0], d) if len(x.shape) > 1 else (x, xf, d)
 
-		Args:
-			task (Task): Optimization task.
-
-		Returns:
-			Tuple[numpy.ndarray, float, dict]:
-			1. Initial solution
-			2. Initial solutions fitness/objective value
-			3. Additional arguments
-		"""
-		x = task.Lower + task.bcRange() * self.rand(task.D)
-		curT, xfit = self.T, task.eval(x)
-		return x, xfit, {'curT': curT}
-
-	def runIteration(self, task, x, xfit, xb, fxb, curT, **dparams):
-		r"""Core funciton of the algorithm.
-
-		Args:
-			task (Task):
-			x (numpy.ndarray):
-			xfit (float):
-			xb (numpy.ndarray):
-			fxb (float):
-			curT (float):
-			**dparams (dict): Additional arguments.
-
-		Returns:
-			Tuple[numpy.ndarray, float, numpy.ndarray, float, dict]:
-			1. New solution
-			2. New solutions fitness/objective value
-			3. New global best solution
-			4. New global best solutions fitness/objective value
-			5. Additional arguments
-		"""
-		c = task.repair(x - self.delta / 2 + self.rand(task.D) * self.delta, rnd=self.Rand)
-		cfit = task.eval(c)
-		deltaFit, r = cfit - xfit, self.rand()
-		if deltaFit < 0 or r < exp(deltaFit / curT): x, xfit = c, cfit
+	def runIteration(self, task, x, xf, xb, fxb, curT, **dparams):
+		c = task.repair(x[0] - self.delta / 2 + self.rand(task.D) * self.delta, rnd=self.Rand)
+		cf = task.eval(c)
+		deltaFit, r = cf - xf, self.rand()
+		if deltaFit < 0 or r < exp(deltaFit / curT): x, xf = c, cf
 		curT = self.cool(curT, self.T, deltaT=self.deltaT, nFES=task.nFES)
-		xb, fxb = self.getBest(x, xfit, xb, fxb)
-		return x, xfit, xb, fxb, {'curT': curT}
+		if xf <= fxb: xb, fxb = x, xf
+		return x, xf, xb, fxb, {'curT': curT}
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

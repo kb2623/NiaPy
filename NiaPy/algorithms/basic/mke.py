@@ -1,9 +1,8 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, trailing-whitespace, multiple-statements, attribute-defined-outside-init, logging-not-lazy, no-self-use, len-as-condition, singleton-comparison, arguments-differ, bad-continuation, line-too-long
 import logging
 from math import ceil
 
-from numpy import apply_along_axis, vectorize, argmin, argmax, full, tril, asarray
+from numpy import apply_along_axis, vectorize, argmin, argmax, full, tril
 
 from NiaPy.algorithms.algorithm import Algorithm, Individual, defaultIndividualInit, defaultNumPyInit
 
@@ -133,24 +132,6 @@ class MonkeyKingEvolutionV1(Algorithm):
 		Algorithm.setParameters(self, NP=NP, itype=ukwargs.pop('itype', MkeSolution), InitPopFunc=ukwargs.pop('InitPopFunc', defaultIndividualInit), **ukwargs)
 		self.F, self.R, self.C, self.FC = F, R, C, FC
 
-	def getParameters(self):
-		r"""Get algorithms parametes values.
-
-		Returns:
-			Dict[str, Any]
-
-		See Also:
-			* :func:`NiaPy.algorithms.Algorithm.getParameters
-		"""
-		d = Algorithm.getParameters(self)
-		d.update({
-			'F': self.F,
-			'R': self.R,
-			'C': self.C,
-			'FC': self.FC
-		})
-		return d
-
 	def moveP(self, x, x_pb, x_b, task):
 		r"""Move normal particle in search space.
 
@@ -192,7 +173,7 @@ class MonkeyKingEvolutionV1(Algorithm):
 
 		Args:
 			p (MkeSolution): Monke particle.
-			p_b (MkeSolution): Population best particle.
+			p_b (numpy.ndarray): Population best particle.
 			task (Task): Optimization task.
 		"""
 		p.x = self.moveP(p.x, p.x_pb, p_b, task)
@@ -211,22 +192,27 @@ class MonkeyKingEvolutionV1(Algorithm):
 		ib = argmin(A_f)
 		p.x, p.f = A[ib], A_f[ib]
 
-	def movePopulation(self, pop, xb, task):
+	def movePopulation(self, pop, xb, fxb, task):
 		r"""Move population.
 
 		Args:
 			pop (numpy.ndarray[MkeSolution]): Current population.
-			xb (MkeSolution): Current best solution.
+			xb (numpy.ndarray): Global best position.
+			fxb (float): Global best function/fitness value.
 			task (Task): Optimization task.
 
 		Returns:
-			numpy.ndarray[MkeSolution]: New particles.
+			Tuple[numpy.ndarray[MkeSolution], numpy.ndarray, float]:
+				1. New particles.
+				2. New global best position.
+				3. New global best function/fitness value.
 		"""
 		for p in pop:
 			if p.MonkeyKing: self.moveMokeyKingPartice(p, task)
 			else: self.movePartice(p, xb, task)
 			p.uPersonalBest()
-		return pop
+			if p.f <= fxb: xb, fxb = p.x, p.f
+		return pop, xb, fxb
 
 	def initPopulation(self, task):
 		r"""Init population.
@@ -251,7 +237,7 @@ class MonkeyKingEvolutionV1(Algorithm):
 			task (Task): Optimization task
 			pop (numpy.ndarray[MkeSolution]): Current population
 			fpop (numpy.ndarray[float]): Current population fitness/function values
-			xb (MkeSolution): Current best solution.
+			xb (numpy.ndarray): Current best solution.
 			fxb (float): Current best solutions function/fitness value.
 			**dparams (Dict[str, Any]): Additional arguments.
 
@@ -261,11 +247,9 @@ class MonkeyKingEvolutionV1(Algorithm):
 				2. Fitness/function values of solution.
 				3. Additional arguments.
 		"""
-		pop = self.movePopulation(pop, xb, task)
+		pop, xb, fxb = self.movePopulation(pop, xb, fxb, task)
 		for i in self.Rand.choice(self.NP, int(self.R * len(pop)), replace=False): pop[i].MonkeyKing = True
-		fpop = asarray([m.f for m in pop])
-		xb, fxb = self.getBest(pop, fpop, xb, fxb)
-		return pop, fpop, xb, fxb, {}
+		return pop, [m.f for m in pop], xb, fxb, {}
 
 class MonkeyKingEvolutionV2(MonkeyKingEvolutionV1):
 	r"""Implementation of monkey king evolution algorithm version 2.
@@ -341,22 +325,27 @@ class MonkeyKingEvolutionV2(MonkeyKingEvolutionV1):
 			if a_f < p_f: p_b, p_f = a, a_f
 		p.x, p.f = p_b, p_f
 
-	def movePopulation(self, pop, xb, task):
+	def movePopulation(self, pop, xb, fxb, task):
 		r"""Move population.
 
 		Args:
 			pop (numpy.ndarray[MkeSolution]): Current population.
-			xb (MkeSolution): Current best solution.
+			xb (numpy.ndarray): Global best position.
+			fxb (float): Global best function/fitness value.
 			task (Task): Optimization task.
 
 		Returns:
-			numpy.ndarray[MkeSolution]: Moved population.
+			Tuple[numpy.ndarray[MkeSolution], numpy.ndarray, float]:
+				1. Moved population.
+				2. New global best position.
+				3. New global best function/fitness value.
 		"""
 		for p in pop:
 			if p.MonkeyKing: self.moveMokeyKingPartice(p, pop, task)
 			else: self.movePartice(p, xb, task)
 			p.uPersonalBest()
-		return pop
+			if p.f <= fxb: xb, fxb = p.x, p.f
+		return pop, xb, fxb
 
 class MonkeyKingEvolutionV3(MonkeyKingEvolutionV1):
 	r"""Implementation of monkey king evolution algorithm version 3.
@@ -466,15 +455,15 @@ class MonkeyKingEvolutionV3(MonkeyKingEvolutionV1):
 		"""
 		X_gb = apply_along_axis(task.repair, 1, xb + self.FC * X[self.Rand.choice(len(X), c)] - X[self.Rand.choice(len(X), c)], self.Rand)
 		X_gb_f = apply_along_axis(task.eval, 1, X_gb)
-		xb, fxb = self.getBest(X_gb, X_gb_f, xb, fxb)
 		M = full([self.NP, task.D], 1.0)
 		for i in range(k): M[i * task.D:(i + 1) * task.D] = tril(M[i * task.D:(i + 1) * task.D])
 		for i in range(self.NP): self.Rand.shuffle(M[i])
 		X = apply_along_axis(task.repair, 1, M * X + vectorize(self.neg)(M) * xb, self.Rand)
 		X_f = apply_along_axis(task.eval, 1, X)
-		xb, fxb = self.getBest(X, X_f, xb, fxb)
-		iw, ib_gb = argmax(X_f), argmin(X_gb_f)
+		iw, ib, ib_gb = argmax(X_f), argmin(X_f), argmin(X_gb_f)
 		if X_gb_f[ib_gb] <= X_f[iw]: X[iw], X_f[iw] = X_gb[ib_gb], X_gb_f[ib_gb]
+		if X_gb_f[ib_gb] <= fxb: xb, fxb = X_gb[ib_gb], X_gb_f[ib_gb]
+		if X_f[ib] <= fxb: xb, fxb = X[ib], X_f[ib]
 		return X, X_f, xb, fxb, {'k': k, 'c': c}
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

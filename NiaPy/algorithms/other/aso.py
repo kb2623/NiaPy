@@ -1,8 +1,9 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, line-too-long, singleton-comparison, multiple-statements, attribute-defined-outside-init, no-self-use, logging-not-lazy, unused-variable, arguments-differ, unused-argument, dangerous-default-value, bad-continuation, no-else-return
 import logging
+
 from scipy.spatial.distance import euclidean
-from numpy import apply_along_axis, argmin, full, inf, where, asarray, random as rand, sort, exp
+from numpy import apply_along_axis, argmin, full, inf, where, asarray, random as rand, sort, exp, ndarray
+
 from NiaPy.algorithms.algorithm import Algorithm
 from NiaPy.util import fullArray
 
@@ -169,10 +170,10 @@ class AnarchicSocietyOptimization(Algorithm):
 		Ahmadi-Javid, Amir. "Anarchic Society Optimization: A human-inspired method." Evolutionary Computation (CEC), 2011 IEEE Congress on. IEEE, 2011.
 
 	Attributes:
-		Name (list of str): List of stings representing name of algorithm.
-		alpha (List[float]): Factor for fickleness index function :math:`\in [0, 1]`.
-		gamma (List[float]): Factor for external irregularity index function :math:`\in [0, \infty)`.
-		theta (List[float]): Factor for internal irregularity index function :math:`\in [0, \infty)`.
+		Name (List[str]): List of stings representing name of algorithm.
+		alpha (Union[List[float], Tuple[float], numpy.ndarray[float]]): Factor for fickleness index function :math:`\in [0, 1]`.
+		gamma (Union[List[float], Tuple[float], numpy.ndarray[float]]): Factor for external irregularity index function :math:`\in [0, \infty)`.
+		theta (Union[List[float], Tuple[float], numpy.ndarray[float]]): Factor for internal irregularity index function :math:`\in [0, \infty)`.
 		d (Callable[[float, float], float]): function that takes two arguments that are function values and calcs the distance between them.
 		dn (Callable[[numpy.ndarray, numpy.ndarray], float]): function that takes two arguments that are points in function landscape and calcs the distance between them.
 		nl (float): Normalized range for neighborhood search :math:`\in (0, 1]`.
@@ -186,27 +187,40 @@ class AnarchicSocietyOptimization(Algorithm):
 	Name = ['AnarchicSocietyOptimization', 'ASO']
 
 	@staticmethod
+	def algorithmInfo():
+		r"""Get basic information about AnarchicSocietyOptimization algorithm.
+
+		Returns:
+			str: Basic information.
+		"""
+		return r"""Ahmadi-Javid, Amir. "Anarchic Society Optimization: A human-inspired method." Evolutionary Computation (CEC), 2011 IEEE Congress on. IEEE, 2011."""
+
+	@staticmethod
 	def typeParameters():
 		r"""Get dictionary with functions for checking values of parameters.
 
 		Returns:
 			Dict[str, Callable]:
-				* alpha (Callable): TODO
-				* gamma (Callable): TODO
-				* theta (Callable): TODO
-				* nl (Callable): TODO
-				* F (Callable[[Union[float, int]], bool]): TODO
-				* CR (Callable[[Union[float, int]], bool]): TODO
+				* alpha (Callable[[Union[float, List[float], Tuple[float], numpy.ndarray[float]]], bool])
+				* gamma (Callable[[Union[float, List[float], Tuple[float], numpy.ndarray[float]]], bool])
+				* theta (Callable[[Union[float, List[float], Tuple[float], numpy.ndarray[float]]], bool])
+				* nl (Callable[[float], bool])
+				* F (Callable[[Union[float, int]], bool])
+				* CR (Callable[[float], bool])
 
 		See Also:
 			* :func:`NiaPy.algorithms.Algorithm.typeParameters`
 		"""
 		d = Algorithm.typeParameters()
+		def probs(x):
+			if isinstance(x, float): return 0 <= x <= 1
+			if isinstance(x, (ndarray, list, tuple)): return not (False in [probs(e) for e in x])
+			else: return False
 		d.update({
-			'alpha': lambda x: True,
-			'gamma': lambda x: True,
-			'theta': lambda x: True,
-			'nl': lambda x: True,
+			'alpha': lambda x: probs(x),
+			'gamma': lambda x: probs(x),
+			'theta': lambda x: probs(x),
+			'nl': lambda x: isinstance(x, float) and 0 <= x <= 1,
 			'F': lambda x: isinstance(x, (int, float)) and x > 0,
 			'CR': lambda x: isinstance(x, float) and 0 <= x <= 1
 		})
@@ -216,10 +230,10 @@ class AnarchicSocietyOptimization(Algorithm):
 		r"""Set the parameters for the algorith.
 
 		Arguments:
-			alpha (Optional[List[float]]): Factor for fickleness index function :math:`\in [0, 1]`.
-			gamma (Optional[List[float]]): Factor for external irregularity index function :math:`\in [0, \infty)`.
-			theta (Optional[List[float]]): Factor for internal irregularity index function :math:`\in [0, \infty)`.
-			d (Optional[Callable[[float, float], float]]): function that takes two arguments that are function values and calcs the distance between them.
+			alpha (Optional[Union[float, List[float], Tuple[float], numpy.ndarray[float]]]): Factor for fickleness index function :math:`\in [0, 1]`.
+			gamma (Optional[Union[float, List[float], Tuple[float], numpy.ndarray[float]]]): Factor for external irregularity index function :math:`\in [0, \infty)`.
+			theta (Optional[Union[float, List[float], Tuple[float], numpy.ndarray[float]]]): Factor for internal irregularity index function :math:`\in [0, \infty)`.
+			d (Optional[Callable[[float, float], float]]): function that takes two arguments that are function values and calculates the distance between them.
 			dn (Optional[Callable[[numpy.ndarray, numpy.ndarray], float]]): function that takes two arguments that are points in function landscape and calcs the distance between them.
 			nl (Optional[float]): Normalized range for neighborhood search :math:`\in (0, 1]`.
 			F (Optional[float]): Mutation parameter.
@@ -229,9 +243,9 @@ class AnarchicSocietyOptimization(Algorithm):
 		See Also:
 			* :func:`NiaPy.algorithms.Algorithm.setParameters`
 			* Combination methods:
-				* :func:`NiaPy.algorithms.other.Elitism'
-				* :func:`NiaPy.algorithms.other.Crossover`
-				* :func:`NiaPy.algorithms.other.Sequential`
+				* :func:`NiaPy.algorithms.other.aso.Elitism'
+				* :func:`NiaPy.algorithms.other.aso.Crossover`
+				* :func:`NiaPy.algorithms.other.aso.Sequential`
 		"""
 		Algorithm.setParameters(self, NP=NP, **ukwargs)
 		self.alpha, self.gamma, self.theta, self.d, self.dn, self.nl, self.F, self.CR, self.Combination = alpha, gamma, theta, d, dn, nl, F, CR, Combination
@@ -243,10 +257,10 @@ class AnarchicSocietyOptimization(Algorithm):
 			task (Task): Optimization task.
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
-				1. Array of `self.alpha` propagated values
-				2. Array of `self.gamma` propagated values
-				3. Array of `self.theta` propagated values
+			Tuple[numpy.ndarray[float], numpy.ndarrayj[float], numpy.ndarray[float]]
+				1. Array of `self.alpha` propagated values.
+				2. Array of `self.gamma` propagated values.
+				3. Array of `self.theta` propagated values.
 		"""
 		return fullArray(self.alpha, self.NP), fullArray(self.gamma, self.NP), fullArray(self.theta, self.NP)
 
@@ -257,7 +271,7 @@ class AnarchicSocietyOptimization(Algorithm):
 			x_f (float): Individuals fitness/function value.
 			xpb_f (float): Individuals personal best fitness/function value.
 			xb_f (float): Current best found individuals fitness/function value.
-			alpha (float): TODO.
+			alpha (float): Factor for fickleness index.
 
 		Returns:
 			float: Fickleness index.
@@ -270,7 +284,7 @@ class AnarchicSocietyOptimization(Algorithm):
 		Args:
 			x_f (float): Individuals fitness/function value.
 			xnb_f (float): Individuals new fitness/function value.
-			gamma (float): TODO.
+			gamma (float): Factor for external irregularity index.
 
 		Returns:
 			float: External irregularity index.
@@ -283,7 +297,7 @@ class AnarchicSocietyOptimization(Algorithm):
 		Args:
 			x_f (float): Individuals fitness/function value.
 			xpb_f (float): Individuals personal best fitness/function value.
-			theta (float): TODO.
+			theta (float): Factor for internal irregularity index.
 
 		Returns:
 			float: Internal irregularity index
@@ -335,15 +349,15 @@ class AnarchicSocietyOptimization(Algorithm):
 			task (Task): Optimization task
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, dict]:
+			Tuple[numpy.ndarray, numpy.ndarray[float], dict]:
 				1. Initialized population
 				2. Initialized population fitness/function values
-				3. Dict[str, Any]:
+				3. Dict[str, Union[float, int, array[Union[float, int]]]:
 					* Xpb (numpy.ndarray): Initialized populations best positions.
-					* Xpb_f (numpy.ndarray): Initialized populations best positions function/fitness values.
-					* alpha (numpy.ndarray):
-					* gamma (numpy.ndarray):
-					* theta (numpy.ndarray):
+					* Xpb_f (numpy.ndarray[float]): Initialized populations best positions function/fitness values.
+					* alpha (numpy.ndarray[float]): Factors for fickleness indexes.
+					* gamma (numpy.ndarray[float]): Factors for external irregularity indexes.
+					* theta (numpy.ndarray[float]): Factors for internal irregularity indexes.
 					* rs (float): Distance of search space.
 
 		See Also:
@@ -362,36 +376,37 @@ class AnarchicSocietyOptimization(Algorithm):
 		Args:
 			task (Task): Optimization task.
 			X (numpy.ndarray): Current populations positions.
-			X_f (numpy.ndarray): Current populations function/fitness values.
+			X_f (numpy.ndarray[float]): Current populations function/fitness values.
 			xb (numpy.ndarray): Current global best individuals position.
 			fxb (float): Current global best individual function/fitness value.
 			Xpb (numpy.ndarray): Current populations best positions.
-			Xpb_f (numpy.ndarray): Current population best positions function/fitness values.
-			alpha (numpy.ndarray): TODO.
-			gamma (numpy.ndarray):
-			theta (numpy.ndarray):
-			**dparams: Additional arguments.
+			Xpb_f (numpy.ndarray[float]): Current population best positions function/fitness values.
+			alpha (numpy.ndarray[float]): Factors for fickleness indexes.
+			gamma (numpy.ndarray[float]): Factors for external irregularity indexes.
+			theta (numpy.ndarray[float]): Factors for internal irregularity indexes.
+			**dparams (Dict[str, Any]): Additional arguments.
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, float, dict]:
+			Tuple[numpy.ndarray, numpy.ndarray[float], dict]:
 				1. Initialized population
 				2. Initialized population fitness/function values
-				3. New global best solution
-				4. New global best solutions fitness/objective value
-				5. Dict[str, Union[float, int, numpy.ndarray]:
+				3. Dict[str, Union[float, int, array[Union[float, int]]]:
 					* Xpb (numpy.ndarray): Initialized populations best positions.
-					* Xpb_f (numpy.ndarray): Initialized populations best positions function/fitness values.
-					* alpha (numpy.ndarray):
-					* gamma (numpy.ndarray):
-					* theta (numpy.ndarray):
+					* Xpb_f (numpy.ndarray[float]): Initialized populations best positions function/fitness values.
+					* alpha (numpy.ndarray[float]): Factors for fickleness indexes.
+					* gamma (numpy.ndarray[float]): Factors for external irregularity indexes.
+					* theta (numpy.ndarray[float]): Factors for internal irregularity indexes.
 					* rs (float): Distance of search space.
 		"""
 		Xin = [self.getBestNeighbors(i, X, X_f, rs) for i in range(len(X))]
 		MP_c, MP_s, MP_p = asarray([self.FI(X_f[i], Xpb_f[i], fxb, alpha[i]) for i in range(len(X))]), asarray([self.EI(X_f[i], X_f[Xin[i]], gamma[i]) for i in range(len(X))]), asarray([self.II(X_f[i], Xpb_f[i], theta[i]) for i in range(len(X))])
-		Xtmp = asarray([self.Combination(X[i], Xpb[i], xb, X[self.randint(len(X), skip=[i])], MP_c[i], MP_s[i], MP_p[i], self.F, self.CR, task, self.Rand) for i in range(len(X))])
+		Xtmp = []
+		for i in range(len(X)):
+			xn = self.Combination(X[i], Xpb[i], xb, X[self.randint(len(X), skip=[i])], MP_c[i], MP_s[i], MP_p[i], self.F, self.CR, task, self.Rand)
+			if xn[1] <= fxb: xb, fxb = xn
+			Xtmp.append(xn)
 		X, X_f = asarray([Xtmp[i][0] for i in range(len(X))]), asarray([Xtmp[i][1] for i in range(len(X))])
 		Xpb, Xpb_f = self.uBestAndPBest(X, X_f, Xpb, Xpb_f)
-		xb, fxb = self.getBest(X, X_f, xb, fxb)
 		return X, X_f, xb, fxb, {'Xpb': Xpb, 'Xpb_f': Xpb_f, 'alpha': alpha, 'gamma': gamma, 'theta': theta, 'rs': rs}
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

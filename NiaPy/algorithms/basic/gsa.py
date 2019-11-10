@@ -1,9 +1,10 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, multiple-statements, line-too-long, unused-argument, no-self-use, no-self-use, attribute-defined-outside-init, logging-not-lazy, len-as-condition, singleton-comparison, arguments-differ, redefined-builtin, bad-continuation
+from typing import Tuple, Union, Callable, Dict, List
 import logging
 
-from numpy import apply_along_axis, asarray, argmin, argmax, sum, full
+import numpy as np
 
+from NiaPy.util import Task
 from NiaPy.algorithms.algorithm import Algorithm
 
 __all__ = ['GravitationalSearchAlgorithm']
@@ -39,25 +40,24 @@ class GravitationalSearchAlgorithm(Algorithm):
 	See Also:
 		* :class:`NiaPy.algorithms.algorithm.Algorithm`
 	"""
-	Name = ['GravitationalSearchAlgorithm', 'GSA']
+	Name: List[str] = ['GravitationalSearchAlgorithm', 'GSA']
 
 	@staticmethod
-	def algorithmInfo():
-		r"""Get algorithm information.
+	def algorithmInfo() -> str:
+		r"""Get basic information of GravitationalSearchAlgorithm algorithm.
 
 		Returns:
-			str: Algorithm information.
+			Basic information.
 		"""
 		return r"""Esmat Rashedi, Hossein Nezamabadi-pour, Saeid Saryazdi, GSA: A Gravitational Search Algorithm, Information Sciences, Volume 179, Issue 13, 2009, Pages 2232-2248, ISSN 0020-0255"""
 
 	@staticmethod
-	def typeParameters():
-		r"""TODO.
+	def typeParameters() -> Dict[str, Callable[[Union[int, float]], bool]]:
+		r"""Get dictionary with functions for checking values of parameters.
 
 		Returns:
-			Dict[str, Callable]:
-				* G_0 (Callable[[Union[int, float]], bool]): TODO
-				* epsilon (Callable[[float], bool]): TODO
+			* G_0 (Callable[[Union[int, float]], bool])
+			* epsilon (Callable[[float], bool])
 
 		See Also:
 			* :func:`NiaPy.algorithms.algorithm.Algorithm.typeParameters`
@@ -69,12 +69,12 @@ class GravitationalSearchAlgorithm(Algorithm):
 		})
 		return d
 
-	def setParameters(self, NP=40, G_0=2.467, epsilon=1e-17, **ukwargs):
+	def setParameters(self, NP: int = 40, G_0: float = 2.467, epsilon: float = 1e-17, **ukwargs: dict) -> None:
 		r"""Set the algorithm parameters.
 
 		Arguments:
-			G_0 (float): Starting gravitational constant.
-			epsilon (float): TODO.
+			G_0: Starting gravitational constant.
+			epsilon: Small values.
 
 		See Also:
 			* :func:`NiaPy.algorithms.algorithm.Algorithm.setParameters`
@@ -82,96 +82,78 @@ class GravitationalSearchAlgorithm(Algorithm):
 		Algorithm.setParameters(self, NP=NP, **ukwargs)
 		self.G_0, self.epsilon = G_0, epsilon
 
-	def getParameters(self):
-		r"""Get algorithm parameters values.
-
-		Returns:
-			Dict[str, Any]: TODO.
-
-		See Also:
-			* :func:`NiaPy.algorithms.algorithm.Algorithm.getParameters`
-		"""
-		d = Algorithm.getParameters(self)
-		d.update({
-			'G_0': self.G_0,
-			'epsilon': self.epsilon
-		})
-		return d
-
-	def G(self, t):
+	def G(self, t: int) -> float:
 		r"""TODO.
 
 		Args:
-			t (int): TODO
-
-		Returns:
-			float: TODO
-		"""
-		return self.G_0 / t
-
-	def d(self, x, y, ln=2):
-		r"""TODO.
-
-		Args:
-			x:
-			y:
-			ln:
+			t: Algorithms iteration number.
 
 		Returns:
 			TODO
 		"""
-		return sum((x - y) ** ln) ** (1 / ln)
+		return self.G_0 / t
 
-	def initPopulation(self, task):
+	def d(self, x: np.ndarray, y: np.ndarray, ln: int = 2) -> float:
+		r"""Get distance between to planets.
+
+		Args:
+			x: First planet position.
+			y: Second planet position.
+			ln: Factor of distance.
+
+		Returns:
+			Distance between two planets.
+		"""
+		return np.sum((x - y) ** ln) ** (1 / ln)
+
+	def initPopulation(self, task: Task) -> Tuple[np.ndarray, np.ndarray, dict]:
 		r"""Initialize staring population.
 
 		Args:
-			task (Task): Optimization task.
+			task: Optimization task.
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray[float], Dict[str, Any]]:
-				1. Initialized population.
-				2. Initialized populations fitness/function values.
-				3. Additional arguments:
-					* v (numpy.ndarray[float]): TODO
+			1. Initialized population.
+			2. Initialized populations fitness/function values.
+			3. Additional arguments:
+				* v (numpy.ndarray[float]): Velocity of planets.
 
 		See Also:
 			* :func:`NiaPy.algorithms.algorithm.Algorithm.initPopulation`
 		"""
 		X, X_f, _ = Algorithm.initPopulation(self, task)
-		v = full([self.NP, task.D], 0.0)
+		v = np.full([self.NP, task.D], 0.0)
 		return X, X_f, {'v': v}
 
-	def runIteration(self, task, X, X_f, xb, fxb, v, **dparams):
+	def runIteration(self, task: Task, X: np.ndarray, X_f: np.ndarray, xb: np.ndarray, fxb: float, v: np.ndarray, **dparams: dict) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float, dict]:
 		r"""Core function of GravitationalSearchAlgorithm algorithm.
 
 		Args:
-			task (Task): Optimization task.
-			X (numpy.ndarray): Current population.
-			X_f (numpy.ndarray): Current populations fitness/function values.
-			xb (numpy.ndarray): Global best solution.
-			fxb (float): Global best fitness/function value.
-			v (numpy.ndarray): TODO
-			**dparams (Dict[str, Any]): Additional arguments.
+			task: Optimization task.
+			X: Current population.
+			X_f: Current populations fitness/function values.
+			xb: Global best solution.
+			fxb: Global best fitness/function value.
+			v: Velocity of planes.
+			**dparams: Additional arguments.
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, float, Dict[str, Any]]:
-				1. New population.
-				2. New populations fitness/function values.
-				3. New global best solution
-				4. New global best solutions fitness/objective value
-				5. Additional arguments:
-					* v (numpy.ndarray): TODO
+			1. New population.
+			2. New populations fitness/function values.
+			3. New global best position.
+			4. New global best positions function/fitness value.
+			5. Additional arguments:
+				* v (numpy.ndarray[float]): Velocity of planets.
 		"""
-		ib, iw = argmin(X_f), argmax(X_f)
+		ib, iw = np.argmin(X_f), np.argmax(X_f)
 		m = (X_f - X_f[iw]) / (X_f[ib] - X_f[iw])
-		M = m / sum(m)
-		Fi = asarray([[self.G(task.Iters) * ((M[i] * M[j]) / (self.d(X[i], X[j]) + self.epsilon)) * (X[j] - X[i]) for j in range(len(M))] for i in range(len(M))])
-		F = sum(self.rand([self.NP, task.D]) * Fi, axis=1)
+		M = m / np.sum(m)
+		Fi = np.asarray([[self.G(task.Iters) * ((M[i] * M[j]) / (self.d(X[i], X[j]) + self.epsilon)) * (X[j] - X[i]) for j in range(len(M))] for i in range(len(M))])
+		F = np.sum(self.rand([self.NP, task.D]) * Fi, axis=1)
 		a = F.T / (M + self.epsilon)
 		v = self.rand([self.NP, task.D]) * v + a.T
-		X = apply_along_axis(task.repair, 1, X + v, self.Rand)
-		X_f = apply_along_axis(task.eval, 1, X)
+		X = np.apply_along_axis(task.repair, 1, X + v, self.Rand)
+		X_f = np.apply_along_axis(task.eval, 1, X)
 		xb, fxb = self.getBest(X, X_f, xb, fxb)
 		return X, X_f, xb, fxb, {'v': v}
 

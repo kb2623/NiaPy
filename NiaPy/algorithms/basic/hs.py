@@ -1,5 +1,4 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, trailing-whitespace, multiple-statements, attribute-defined-outside-init, logging-not-lazy, arguments-differ, line-too-long, unused-argument, bad-continuation
 import logging
 
 from numpy import argmax, log, exp, full
@@ -17,31 +16,31 @@ class HarmonySearch(Algorithm):
 	r"""Implementation of harmony search algorithm.
 
 	Algorithm:
-			  Harmony Search Algorithm
+		Harmony Search Algorithm
 
 	Date:
-			  2018
+		2018
 
 	Authors:
-			  Klemen Berkovič
+		Klemen Berkovič
 
 	License:
-			  MIT
+		MIT
 
 	Reference URL:
-			  https://link.springer.com/chapter/10.1007/978-3-642-00185-7_1
+		https://link.springer.com/chapter/10.1007/978-3-642-00185-7_1
 
 	Reference paper:
-			  Yang, Xin-She. "Harmony search as a metaheuristic algorithm." Music-inspired harmony search algorithm. Springer, Berlin, Heidelberg, 2009. 1-14.
+		Yang, Xin-She. "Harmony search as a metaheuristic algorithm." Music-inspired harmony search algorithm. Springer, Berlin, Heidelberg, 2009. 1-14.
 
 	Attributes:
-			  Name (List[str]): List of strings representing algorithm names
-			  r_accept (float): Probability of accepting new bandwidth into harmony.
-			  r_pa (float): Probability of accepting random bandwidth into harmony.
-			  b_range (float): Range of bandwidth.
+		Name (List[str]): List of strings representing algorithm names
+		r_accept (float): Probability of accepting new bandwidth into harmony.
+		r_pa (float): Probability of accepting random bandwidth into harmony.
+		b_range (float): Range of bandwidth.
 
 	See Also:
-			  * :class:`NiaPy.algorithms.algorithm.Algorithm`
+		* :class:`NiaPy.algorithms.algorithm.Algorithm`
 
 	"""
 
@@ -52,7 +51,7 @@ class HarmonySearch(Algorithm):
 		r"""Get basic information about the algorithm.
 
 		Returns:
-				  str: Basic information.
+			str: Basic information.
 		"""
 		return r"""Yang, Xin-She. "Harmony search as a metaheuristic algorithm." Music-inspired harmony search algorithm. Springer, Berlin, Heidelberg, 2009. 1-14."""
 
@@ -61,11 +60,11 @@ class HarmonySearch(Algorithm):
 		r"""Get dictionary with functions for checking values of parameters.
 
 		Returns:
-				  Dict[str, Callable]:
-							 * HMS (Callable[[int], bool])
-							 * r_accept (Callable[[float], bool])
-							 * r_pa (Callable[[float], bool])
-							 * b_range (Callable[[float], bool])
+			Dict[str, Callable]:
+				* HMS (Callable[[int], bool])
+				* r_accept (Callable[[float], bool])
+				* r_pa (Callable[[float], bool])
+				* b_range (Callable[[float], bool])
 		"""
 		return {
 			"HMS": lambda x: isinstance(x, int) and x > 0,
@@ -78,37 +77,25 @@ class HarmonySearch(Algorithm):
 		r"""Set the arguments of the algorithm.
 
 		Arguments:
-				  HMS (Optional[int]): Number of harmony in the memory
-				  r_accept (Optional[float]): Probability of accepting new bandwidth to harmony.
-				  r_pa (Optional[float]): Probability of accepting random bandwidth into harmony.
-				  b_range (Optional[float]): Bandwidth range.
+			HMS (Optional[int]): Number of harmony in the memory
+			r_accept (Optional[float]): Probability of accepting new bandwidth to harmony.
+			r_pa (Optional[float]): Probability of accepting random bandwidth into harmony.
+			b_range (Optional[float]): Bandwidth range.
 
 		See Also:
-				  * :func:`NiaPy.algorithms.algorithm.Algorithm.setParameters`
+			* :func:`NiaPy.algorithms.algorithm.Algorithm.setParameters`
 		"""
-		ukwargs.pop('NP', None)
 		Algorithm.setParameters(self, NP=HMS, **ukwargs)
 		self.r_accept, self.r_pa, self.b_range = r_accept, r_pa, b_range
-
-	def getParameters(self):
-		d = Algorithm.getParameters(self)
-		d.pop('NP', None)
-		d.update({
-			'HMS': self.NP,
-			'r_accept': self.r_accept,
-			'r_pa': self.r_pa,
-			'b_range': self.b_range
-		})
-		return d
 
 	def bw(self, task):
 		r"""Get bandwidth.
 
 		Args:
-				  task (Task): Optimization task.
+			task (Task): Optimization task.
 
 		Returns:
-				  float: Bandwidth.
+			float: Bandwidth.
 		"""
 		return self.uniform(-1, 1) * self.b_range
 
@@ -116,11 +103,11 @@ class HarmonySearch(Algorithm):
 		r"""Adjust value based on bandwidth.
 
 		Args:
-				  x (Union[int, float]): Current position.
-				  task (Task): Optimization task.
+			x (Union[int, float]): Current position.
+			task (Task): Optimization task.
 
 		Returns:
-				  float: New position.
+			float: New position.
 		"""
 		return x + self.bw(task)
 
@@ -128,11 +115,11 @@ class HarmonySearch(Algorithm):
 		r"""Create new individual.
 
 		Args:
-				  HM (numpy.ndarray): Current population.
-				  task (Task): Optimization task.
+			HM (numpy.ndarray): Current population.
+			task (Task): Optimization task.
 
 		Returns:
-				  numpy.ndarray: New individual.
+			numpy.ndarray: New individual.
 		"""
 		H = full(task.D, .0)
 		for i in range(task.D):
@@ -144,16 +131,16 @@ class HarmonySearch(Algorithm):
 		r"""Initialize first population.
 
 		Args:
-				  task (Task): Optimization task.
+			task (Task): Optimization task.
 
 		Returns:
-				  Tuple[numpy.ndarray, numpy.ndarray[float], Dict[str, Any]]:
-							 1. New harmony/population.
-							 2. New population fitness/function values.
-							 3. Additional parameters.
+			Tuple[numpy.ndarray, numpy.ndarray[float], Dict[str, Any]]:
+				1. New harmony/population.
+				2. New population fitness/function values.
+				3. Additional parameters.
 
 		See Also:
-				  * :func:`NiaPy.algorithms.algorithm.Algorithm.initPopulation`
+			* :func:`NiaPy.algorithms.algorithm.Algorithm.initPopulation`
 		"""
 		return Algorithm.initPopulation(self, task)
 
@@ -161,56 +148,57 @@ class HarmonySearch(Algorithm):
 		r"""Core function of HarmonySearch algorithm.
 
 		Args:
-				  task (Task): Optimization task.
-				  HM (numpy.ndarray): Current population.
-				  HM_f (numpy.ndarray): Current populations function/fitness values.
-				  xb (numpy.ndarray): Global best individual.
-				  fxb (float): Global best fitness/function value.
-				  **dparams (Dict[str, Any]): Additional arguments.
+			task (Task): Optimization task.
+			HM (numpy.ndarray): Current population.
+			HM_f (numpy.ndarray[float]): Current populations function/fitness values.
+			xb (numpy.ndarray): Global best individual.
+			fxb (float): Global best fitness/function value.
+			**dparams (Dict[str, Any]): Additional arguments.
 
 		Returns:
-				  Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, float, Dict[str, Any]]:
-							 1. New harmony/population.
-							 2. New populations function/fitness values.
-							 3. New global best solution
-							 4. New global best solution fitness/objective value
-							 5. Additional arguments.
+			Tuple[numpy.ndarray, numpy.ndarray[float], numpy.ndarray, float, Dict[str, Any]]:
+				1. New harmony/population.
+				2. New populations function/fitness values.
+				3. New global best position.
+				4. New global best positions function/fitness value.
+				5. Additional arguments.
 		"""
 		H = self.improvize(HM, task)
 		H_f = task.eval(task.repair(H, self.Rand))
 		iw = argmax(HM_f)
-		if H_f <= HM_f[iw]: HM[iw], HM_f[iw] = H, H_f
-		xb, fxb = self.getBest(H, H_f, xb, fxb)
+		if H_f <= HM_f[iw]:
+			HM[iw], HM_f[iw] = H, H_f
+			if H_f < fxb: xb, fxb = H.copy(), H_f
 		return HM, HM_f, xb, fxb, {}
 
 class HarmonySearchV1(HarmonySearch):
 	r"""Implementation of harmony search algorithm.
 
 	Algorithm:
-			  Harmony Search Algorithm
+		Harmony Search Algorithm
 
 	Date:
-			  2018
+		2018
 
 	Authors:
-			  Klemen Berkovič
+		Klemen Berkovič
 
 	License:
-			  MIT
+		MIT
 
 	Reference URL:
-			  https://link.springer.com/chapter/10.1007/978-3-642-00185-7_1
+		https://link.springer.com/chapter/10.1007/978-3-642-00185-7_1
 
 	Reference paper:
-			  Yang, Xin-She. "Harmony search as a metaheuristic algorithm." Music-inspired harmony search algorithm. Springer, Berlin, Heidelberg, 2009. 1-14.
+		Yang, Xin-She. "Harmony search as a metaheuristic algorithm." Music-inspired harmony search algorithm. Springer, Berlin, Heidelberg, 2009. 1-14.
 
 	Attributes:
-			  Name (List[str]): List of strings representing algorithm name.
-			  bw_min (float): Minimal bandwidth.
-			  bw_max (float): Maximal bandwidth.
+		Name (List[str]): List of strings representing algorithm name.
+		bw_min (float): Minimal bandwidth.
+		bw_max (float): Maximal bandwidth.
 
 	See Also:
-			  * :class:`NiaPy.algorithms.basic.hs.HarmonySearch`
+		* :class:`NiaPy.algorithms.basic.hs.HarmonySearch`
 	"""
 	Name = ["HarmonySearchV1", "HSv1"]
 
@@ -219,7 +207,7 @@ class HarmonySearchV1(HarmonySearch):
 		r"""Get basic information about algorihtm.
 
 		Returns:
-				  str: Basic information.
+			str: Basic information.
 		"""
 		return r"""Yang, Xin-She. "Harmony search as a metaheuristic algorithm." Music-inspired harmony search algorithm. Springer, Berlin, Heidelberg, 2009. 1-14."""
 
@@ -228,10 +216,10 @@ class HarmonySearchV1(HarmonySearch):
 		r"""Get dictionary with functions for checking values of parameters.
 
 		Returns:
-				  Dict[str, Callable]: Function for testing correctness of parameters.
+			Dict[str, Callable]: Function for testing correctness of parameters.
 
 		See Also:
-				  * :func:`NiaPy.algorithms.basic.HarmonySearch.typeParameters`
+			* :func:`NiaPy.algorithms.basic.HarmonySearch.typeParameters`
 		"""
 		d = HarmonySearch.typeParameters()
 		del d["b_range"]
@@ -245,32 +233,24 @@ class HarmonySearchV1(HarmonySearch):
 		r"""Set the parameters of the algorithm.
 
 		Arguments:
-				  bw_min (Optional[float]): Minimal bandwidth
-				  bw_max (Optional[float]): Maximal bandwidth
-				  kwargs (Dict[str, Any]): Additional arguments.
+			bw_min (Optional[float]): Minimal bandwidth
+			bw_max (Optional[float]): Maximal bandwidth
+			kwargs (Dict[str, Any]): Additional arguments.
 
 		See Also:
-				  * :func:`NiaPy.algorithms.basic.hs.HarmonySearch.setParameters`
+			* :func:`NiaPy.algorithms.basic.hs.HarmonySearch.setParameters`
 		"""
-		HarmonySearch.setParameters(self, **kwargs)
 		self.bw_min, self.bw_max = bw_min, bw_max
-
-	def getParameters(self):
-		d = HarmonySearch.getParameters(self)
-		d.update({
-			'bw_min': self.bw_min,
-			'bw_max': self.bw_max
-		})
-		return d
+		HarmonySearch.setParameters(self, **kwargs)
 
 	def bw(self, task):
 		r"""Get new bandwidth.
 
 		Args:
-				  task (Task): Optimization task.
+			task (Task): Optimization task.
 
 		Returns:
-				  float: New bandwidth.
+			float: New bandwidth.
 		"""
 		return self.bw_min * exp(log(self.bw_min / self.bw_max) * task.Iters / task.nGEN)
 

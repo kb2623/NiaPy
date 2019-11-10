@@ -1,6 +1,4 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, line-too-long, multiple-statements, attribute-defined-outside-init, logging-not-lazy, arguments-differ, bad-continuation
-import copy
 import logging
 
 from numpy import asarray, full, argmax
@@ -36,6 +34,14 @@ class SolutionABC(Individual):
 		"""
 		Individual.__init__(self, **kargs)
 
+	def copy(self):
+		r"""Get a copy of solution.
+
+		Returns:
+			SolutionABC: Copy of solution.
+		"""
+		return SolutionABC(**self.attrs())
+
 class ArtificialBeeColonyAlgorithm(Algorithm):
 	r"""Implementation of Artificial Bee Colony algorithm.
 
@@ -62,6 +68,15 @@ class ArtificialBeeColonyAlgorithm(Algorithm):
 		* :class:`NiaPy.algorithms.Algorithm`
 	"""
 	Name = ['ArtificialBeeColonyAlgorithm', 'ABC']
+
+	@staticmethod
+	def algorithmInfo():
+		r"""Get basic information of the ArtificialBeeColonyAlgorithm algorithm.
+
+		Returns:
+			str: Basic information.
+		"""
+		return r"""Karaboga, D., and Bahriye B. "A powerful and efficient algorithm for numerical function optimization: artificial bee colony (ABC) algorithm." Journal of global optimization 39.3 (2007): 459-471."""
 
 	@staticmethod
 	def typeParameters():
@@ -141,30 +156,30 @@ class ArtificialBeeColonyAlgorithm(Algorithm):
 			dparams (Dict[str, Any]): Additional parameters
 
 		Returns:
-			Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, float, Dict[str, Any]]:
+			Tuple[numpy.ndarray, numpy.ndarray[float], numpy.ndarray, float, Dict[str, Any]]:
 				1. New population
 				2. New population fitness/function values
-				3. New global best solution
-				4. New global best fitness/objecive value
+				3. New global best position.
+				4. New global best positions function/fitness value.
 				5. Additional arguments:
 					* Probes (numpy.ndarray): TODO
 					* Trial (numpy.ndarray): TODO
 		"""
 		for i in range(self.FoodNumber):
-			newSolution = copy.deepcopy(Foods[i])
+			newSolution = Foods[i].copy()
 			param2change = int(self.rand() * task.D)
 			neighbor = int(self.FoodNumber * self.rand())
 			newSolution.x[param2change] = Foods[i].x[param2change] + (-1 + 2 * self.rand()) * (Foods[i].x[param2change] - Foods[neighbor].x[param2change])
 			newSolution.evaluate(task, rnd=self.Rand)
 			if newSolution.f < Foods[i].f:
 				Foods[i], Trial[i] = newSolution, 0
-				if newSolution.f < fxb: xb, fxb = newSolution.x.copy(), newSolution.f
+				if newSolution.f < fxb: xb, fxb = newSolution.x, newSolution.f
 			else: Trial[i] += 1
 		Probs, t, s = self.CalculateProbs(Foods, Probs), 0, 0
 		while t < self.FoodNumber:
 			if self.rand() < Probs[s]:
 				t += 1
-				Solution = copy.deepcopy(Foods[s])
+				Solution = Foods[s].copy()
 				param2change = int(self.rand() * task.D)
 				neighbor = int(self.FoodNumber * self.rand())
 				while neighbor == s: neighbor = int(self.FoodNumber * self.rand())
@@ -172,14 +187,12 @@ class ArtificialBeeColonyAlgorithm(Algorithm):
 				Solution.evaluate(task, rnd=self.Rand)
 				if Solution.f < Foods[s].f:
 					Foods[s], Trial[s] = Solution, 0
-					if Solution.f < fxb: xb, fxb = Solution.x.copy(), Solution.f
+					if Solution.f < fxb: xb, fxb = Solution.x, Solution.f
 				else: Trial[s] += 1
 			s += 1
 			if s == self.FoodNumber: s = 0
 		mi = argmax(Trial)
-		if Trial[mi] >= self.Limit:
-			Foods[mi], Trial[mi] = SolutionABC(task=task, rnd=self.Rand), 0
-			if Foods[mi].f < fxb: xb, fxb = Foods[mi].x.copy(), Foods[mi].f
+		if Trial[mi] >= self.Limit: Foods[mi], Trial[mi] = SolutionABC(task=task, rnd=self.Rand), 0
 		return Foods, asarray([f.f for f in Foods]), xb, fxb, {'Probs': Probs, 'Trial': Trial}
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

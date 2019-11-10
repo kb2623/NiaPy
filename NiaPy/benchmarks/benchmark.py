@@ -1,109 +1,102 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, line-too-long, bad-continuation, multiple-statements, singleton-comparison, unused-argument, no-self-use, trailing-comma-tuple, logging-not-lazy, no-else-return, unused-variable, no-member
 
-"""Implementation of benchmarks utility function."""
-
+"""Implementation of base benchmark class."""
 import logging
-from numpy import inf, arange, meshgrid, vectorize
+from typing import Union, Callable, List
+
+import numpy as np
+
 from matplotlib import pyplot as plt
 from matplotlib import cm
 
 logging.basicConfig()
-logger = logging.getLogger('NiaPy.benchmarks.benchmark')
-logger.setLevel('INFO')
+logger = logging.getLogger("NiaPy.benchmarks.benchmark")
+logger.setLevel("INFO")
 
-__all__ = ['Benchmark']
+__all__ = ["Benchmark"]
 
 class Benchmark:
 	r"""Class representing benchmarks.
 
 	Attributes:
-		Name (List[str]): List of names representiong benchmark names.
+		Name: List of names representiong benchmark names.
 		Lower (Union[int, float, list, numpy.ndarray]): Lower bounds.
 		Upper (Union[int, float, list, numpy.ndarray]): Upper bounds.
-   """
-	Name = ['Benchmark', 'BBB']
+	"""
+	Name: List[str] = ["Benchmark", "BBB"]
 
-	def __init__(self, Lower, Upper, **kwargs):
+	def __init__(self, Lower: Union[int, float, np.ndarray], Upper: Union[int, float, np.ndarray], **kwargs) -> None:
 		r"""Initialize benchmark.
 
 		Args:
-			Lower (Union[int, float, list, numpy.ndarray]): Lower bounds.
-			Upper (Union[int, float, list, numpy.ndarray]): Upper bounds.
-			**kwargs (Dict[str, Any]): Additional arguments.
+			Lower: Lower bounds.
+			Upper: Upper bounds.
+			**kwargs: Additional arguments.
 		"""
-		self.Lower, self.Upper = Lower, Upper
+		self.Lower = Lower
+		self.Upper = Upper
 
 	@staticmethod
-	def latex_code():
+	def latex_code() -> str:
 		r"""Return the latex code of the problem.
 
 		Returns:
-			str: Latex code
+			Latex code.
 		"""
-		return r'''$f(x) = \infty$'''
+		return r"""None"""
 
-	def function(self):
-		r"""Get the optimization function.
+	def function(self) -> Callable[[np.ndarray, dict], float]:
+		r"""Get evaluation function.
 
 		Returns:
-			Callable[[int, Union[list, numpy.ndarray]], float]: Fitness funciton.
+			Evaluation function.
 		"""
-		def fun(D, X):
-			r"""Initialize benchmark.
+		def evaluate(sol: np.ndarray, **kwargs) -> float:
+			r"""Utility/Evaluation function.
 
 			Args:
-				D (int): Dimesionality of the problem.
-				X (Union[int, float, list, numpy.ndarray]): Solution to the problem.
+				sol: Solution to evaluate.
 
-			Retruns:
-				float: Fitness value for the solution
+			Returns:
+				Function value.
 			"""
-			return inf
-		return fun
-
-	def __call__(self):
-		r"""Get the optimization function.
-
-		Returns:
-			Callable[[int, Union[list, numpy.ndarray]], float]: Fitness funciton.
-		"""
-		return self.function()
+			return np.inf
+		return evaluate
 
 	def plot2d(self):
-		r"""Plot 2D graph."""
+		"""Plot."""
 		pass
 
-	def __2dfun(self, x, y, f):
+	def __2dfun(self, x: float, y: float, f: Callable[[np.ndarray, dict], float]) -> float:
 		r"""Calculate function value.
 
 		Args:
-			x (float): First coordinate.
-			y (float): Second coordinate.
-			f (Callable[[int, Union[int, float, List[int, float], numpy.ndarray]], float]): Evaluation function.
+			x: First coordinate.
+			y: Second coordinate.
+			f: Evaluation function.
 
 		Returns:
-			float: Calculate functional value for given input
+			Calculate functional value for given input
 		"""
 		return f(2, x, y)
 
-	def plot3d(self, scale=0.32):
+	def plot3d(self, scale: float = 0.32) -> None:
 		r"""Plot 3d scatter plot of benchmark function.
 
 		Args:
-			scale (float): Scale factor for points.
+			scale: Scale factor for points.
 		"""
 		fig = plt.figure()
-		ax = fig.gca(projection='3d')
+		ax = fig.gca(projection="3d")
 		func = self.function()
-		Xr, Yr = arange(self.Lower, self.Upper, scale), arange(self.Lower, self.Upper, scale)
-		X, Y = meshgrid(Xr, Yr)
-		Z = vectorize(self.__2dfun)(X, Y, func)
+		Xr, Yr = np.arange(self.Lower, self.Upper, scale), np.arange(self.Lower, self.Upper, scale)
+		X, Y = np.meshgrid(Xr, Yr)
+		Z = np.vectorize(self.__2dfun)(X, Y, func)
 		ax.plot_surface(X, Y, Z, rstride=8, cstride=8, alpha=0.3)
-		cset = ax.contourf(X, Y, Z, zdir='z', offset=-10, cmap=cm.coolwarm)
-		ax.set_xlabel('X')
-		ax.set_ylabel('Y')
-		ax.set_zlabel('Z')
+		ax.contourf(X, Y, Z, zdir="z", offset=-10, cmap=cm.coolwarm)
+		ax.set_xlabel("X")
+		ax.set_ylabel("Y")
+		ax.set_zlabel("Z")
 		plt.show()
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

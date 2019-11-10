@@ -35,6 +35,22 @@ watch: install .clean-test ## Continuously run all CI tasks when files chanage
 run: install
 	pipenv run $(PYTHON) $(PACKAGE)/__main__.py
 
+
+# BUILD C FUNCIONS ###########################################################
+
+console:
+	pipenv shell
+
+# BUILD C FUNCIONS ###########################################################
+
+buildfuncs: setup.py
+	pipenv run $(PYTHON) setup.py build_ext --inplace
+
+cleanfuncs:
+	rm -f NiaPy/benchmarks/*.so
+	rm -f NiaPy/benchmarks/*.pyd
+	rm -f functions/benchmark_functions.c
+
 # SYSTEM DEPENDENCIES #########################################################
 
 .PHONY: doctor
@@ -165,8 +181,9 @@ build: dist
 
 .PHONY: dist
 dist: install $(DIST_FILES)
-$(DIST_FILES): $(MODULES) README.rst
+$(DIST_FILES): $(MODULES) README.rst buildfuncs
 	rm -f $(DIST_FILES)
+	pipenv run $(PYTHON) setup.py check --restructuredtext --strict --metadata
 	pipenv run $(PYTHON) setup.py sdist
 	pipenv run $(PYTHON) setup.py bdist_wheel
 	$(TWINE) check dist/*

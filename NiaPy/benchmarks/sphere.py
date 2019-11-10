@@ -1,167 +1,149 @@
 # encoding=utf8
-# pylint: disable=anomalous-backslash-in-string, mixed-indentation, redefined-builtin, multiple-statements
 
-"""Sphere benchmarks."""
+"""Implementations of Sphere benchmarks."""
+from typing import Callable, Union, List
 
-from numpy import abs
+import numpy as np
+
 from NiaPy.benchmarks.benchmark import Benchmark
+from .functions import sphere_function, sphere2_function, sphere3_function
 
-__all__ = ['Sphere', 'Sphere2', 'Sphere3']
+__all__ = ["Sphere", "Sphere2", "Sphere3"]
 
 class Sphere(Benchmark):
 	r"""Implementation of Sphere functions.
 
-	Date: 2018
+	Date:
+		2018
 
-	Authors: Iztok Fister Jr.
+	Authors:
+		Iztok Fister Jr.
 
-	License: MIT
+	License:
+		MIT
 
-	Function: **Sphere function**
+	Function:
+		Sphere function
 
 		:math:`f(\mathbf{x}) = \sum_{i=1}^D x_i^2`
 
-		**Input domain:**
-		The function can be defined on any input domain but it is usually
-		evaluated on the hypercube :math:`x_i ∈ [0, 10]`, for all :math:`i = 1, 2,..., D`.
+		Input domain:
+			The function can be defined on any input domain but it is usually evaluated on the hypercube :math:`x_i ∈ [0, 10]`, for all :math:`i = 1, 2,..., D`.
 
-		**Global minimum:** :math:`f(x^*) = 0`, at :math:`x^* = (0,...,0)`
+		Global minimum:
+			:math:`f(x^*) = 0`, at :math:`x^* = (0,...,0)`
 
 	LaTeX formats:
 		Inline:
-				$f(\mathbf{x}) = \sum_{i=1}^D x_i^2$
+			$f(\mathbf{x}) = \sum_{i=1}^D x_i^2$
 
 		Equation:
-				\begin{equation}f(\mathbf{x}) = \sum_{i=1}^D x_i^2 \end{equation}
+			\begin{equation}f(\mathbf{x}) = \sum_{i=1}^D x_i^2 \end{equation}
 
 		Domain:
-				$0 \leq x_i \leq 10$
+			$0 \leq x_i \leq 10$
 
 	Reference paper:
-		Jamil, M., and Yang, X. S. (2013).
-		A literature survey of benchmark functions for global optimisation problems.
-		International Journal of Mathematical Modelling and Numerical Optimisation,
-		4(2), 150-194.
+		Jamil, M., and Yang, X. S. (2013). A literature survey of benchmark functions for global optimisation problems. International Journal of Mathematical Modelling and Numerical Optimisation, 4(2), 150-194.
 	"""
-	Name = ['Sphere']
+	Name: List[str] = ["Sphere"]
 
-	def __init__(self, Lower=-5.12, Upper=5.12):
-		r"""Initialize of Sphere benchmark.
+	def __init__(self, Lower: Union[int, float, np.ndarray] = -5.12, Upper: Union[int, float, np.ndarray] = 5.12) -> None:
+		r"""Initialize Sphere benchmark.
 
 		Args:
-			Lower (Optional[float]): Lower bound of problem.
-			Upper (Optional[float]): Upper bound of problem.
+			Lower: Lower bound of problem.
+			Upper: Upper bound of problem.
 
 		See Also:
-			:func:`NiaPy.benchmarks.Benchmark.__init__`
+			* :func:`NiaPy.benchmarks.Benchmark.__init__`
+
 		"""
 		Benchmark.__init__(self, Lower, Upper)
 
 	@staticmethod
-	def latex_code():
-		r"""Return the latex code of the problem.
+	def latex_code() -> str:
+		"""Return the latex code of the problem.
 
 		Returns:
-			str: Latex code
+			Latex code.
 		"""
-		return r'''$f(\mathbf{x}) = \sum_{i=1}^D x_i^2$'''
+		return r"""$f(\mathbf{x}) = \sum_{i=1}^D x_i^2$"""
 
-	def function(self):
-		r"""Return benchmark evaluation function.
+	def function(self) -> Callable[[np.ndarray, dict], float]:
+		"""Return benchmark evaluation function.
 
 		Returns:
-			Callable[[int, Union[int, float, List[int, float], numpy.ndarray]], float]: Fitness function
+			Evaluation function.
 		"""
-		def evaluate(D, sol):
-			r"""Fitness function.
-
-			Args:
-				D (int): Dimensionality of the problem
-				sol (Union[int, float, List[int, float], numpy.ndarray]): Solution to check.
-
-			Returns:
-				float: Fitness value for the solution.
-			"""
-			val = 0.0
-			for i in range(D): val += sol[i] ** 2
-			return val
-		return evaluate
+		return lambda x, **a: sphere_function(x)
 
 class Sphere2(Benchmark):
 	r"""Implementation of Sphere with different powers function.
 
-	Date: 2018
+	Date:
+		2018
 
-	Authors: Klemen Berkovič
+	Authors:
+		Klemen Berkovič
 
-	License: MIT
+	License:
+		MIT
 
-	Function: **Sun of different powers function**
+	Function:
+		Sun of different powers function
 
 		:math:`f(\textbf{x}) = \sum_{i = 1}^D | x_i |^{i + 1}`
 
-		**Input domain:**
-		The function can be defined on any input domain but it is usually
-		evaluated on the hypercube :math:`x_i ∈ [-1, 1]`, for all :math:`i = 1, 2,..., D`.
+		Input domain:
+			The function can be defined on any input domain but it is usually evaluated on the hypercube :math:`x_i ∈ [-1, 1]`, for all :math:`i = 1, 2,..., D`.
 
-		**Global minimum:** :math:`f(x^*) = 0`, at :math:`x^* = (0,...,0)`
+		Global minimum:
+			:math:`f(x^*) = 0`, at :math:`x^* = (0,...,0)`
 
 	LaTeX formats:
 		Inline:
-				$f(\textbf{x}) = \sum_{i = 1}^D | x_i |^{i + 1}$
+			$f(\textbf{x}) = \sum_{i = 1}^D | x_i |^{i + 1}$
 
 		Equation:
-				\begin{equation} f(\textbf{x}) = \sum_{i = 1}^D | x_i |^{i + 1} \end{equation}
+			\begin{equation} f(\textbf{x}) = \sum_{i = 1}^D | x_i |^{i + 1} \end{equation}
 
 		Domain:
-				$-1 \leq x_i \leq 1$
+			$-1 \leq x_i \leq 1$
 
 	Reference URL:
 		https://www.sfu.ca/~ssurjano/sumpow.html
 	"""
-	Name = ['Sphere2']
+	Name: List[str] = ["Sphere2"]
 
-	def __init__(self, Lower=-1., Upper=1.):
-		r"""Initialize of Sphere2 benchmark.
+	def __init__(self, Lower: Union[int, float, np.ndarray] = -1.0, Upper: Union[int, float, np.ndarray] = 1.0) -> None:
+		r"""Initialize Sphere benchmark.
 
 		Args:
-			Lower (Optional[float]): Lower bound of problem.
-			Upper (Optional[float]): Upper bound of problem.
+			Lower: Lower bound of problem.
+			Upper: Upper bound of problem.
 
 		See Also:
-			:func:`NiaPy.benchmarks.Benchmark.__init__`
+			* :func:`NiaPy.benchmarks.Benchmark.__init__`
 		"""
 		Benchmark.__init__(self, Lower, Upper)
 
 	@staticmethod
-	def latex_code():
-		r"""Return the latex code of the problem.
+	def latex_code() -> str:
+		"""Return the latex code of the problem.
 
 		Returns:
-			str: Latex code
+			Latex code.
 		"""
-		return r'''$f(\textbf{x}) = \sum_{i = 1}^D | x_i |^{i + 1}$'''
+		return r"""$f(\textbf{x}) = \sum_{i = 1}^D | x_i |^{i + 1}$"""
 
-	def function(self):
-		r"""Return benchmark evaluation function.
+	def function(self) -> Callable[[np.ndarray, dict], float]:
+		"""Return benchmark evaluation function.
 
 		Returns:
-			Callable[[int, Union[int, float, List[int, float], numpy.ndarray]], float]: Fitness function
+			Evaluation function.
 		"""
-		def evaluate(D, sol):
-			r"""Fitness function.
-
-			Args:
-				D (int): Dimensionality of the problem
-				sol (Union[int, float, List[int, float], numpy.ndarray]): Solution to check.
-
-			Returns:
-				float: Fitness value for the solution.
-			"""
-			val = 0.0
-			for i in range(D): val += abs(sol[i]) ** (i + 2)
-			return val
-		return evaluate
+		return lambda x, **a: sphere2_function(x)
 
 class Sphere3(Benchmark):
 	r"""Implementation of rotated hyper-ellipsoid function.
@@ -172,37 +154,38 @@ class Sphere3(Benchmark):
 
 	License: MIT
 
-	Function: **Sun of rotated hyper-elliposid function**
+	Function:
+		Sun of rotated hyper-elliposid function
 
 		:math:`f(\textbf{x}) = \sum_{i = 1}^D \sum_{j = 1}^i x_j^2`
 
-		**Input domain:**
-		The function can be defined on any input domain but it is usually
-		evaluated on the hypercube :math:`x_i ∈ [-65.536, 65.536]`, for all :math:`i = 1, 2,..., D`.
+		Input domain:
+			The function can be defined on any input domain but it is usually evaluated on the hypercube :math:`x_i ∈ [-65.536, 65.536]`, for all :math:`i = 1, 2,..., D`.
 
-		**Global minimum:** :math:`f(x^*) = 0`, at :math:`x^* = (0,...,0)`
+		Global minimum:
+			:math:`f(x^*) = 0`, at :math:`x^* = (0,...,0)`
 
 	LaTeX formats:
 		Inline:
-				$f(\textbf{x}) = \sum_{i = 1}^D \sum_{j = 1}^i x_j^2$
+			$f(\textbf{x}) = \sum_{i = 1}^D \sum_{j = 1}^i x_j^2$
 
 		Equation:
-				\begin{equation} f(\textbf{x}) = \sum_{i = 1}^D \sum_{j = 1}^i x_j^2 \end{equation}
+			\begin{equation} f(\textbf{x}) = \sum_{i = 1}^D \sum_{j = 1}^i x_j^2 \end{equation}
 
 		Domain:
-				$-65.536 \leq x_i \leq 65.536$
+			$-65.536 \leq x_i \leq 65.536$
 
 	Reference URL:
 		https://www.sfu.ca/~ssurjano/rothyp.html
 	"""
-	Name = ['Sphere3']
+	Name: List[str] = ["Sphere3"]
 
-	def __init__(self, Lower=-65.536, Upper=65.536):
-		r"""Initialize of Sphere3 benchmark.
+	def __init__(self, Lower: Union[int, float, np.ndarray] = -65.536, Upper: Union[int, float, np.ndarray] = 65.536) -> None:
+		r"""Initialize Sphere3 benchmark.
 
 		Args:
-			Lower (Optional[float]): Lower bound of problem.
-			Upper (Optional[float]): Upper bound of problem.
+			Lower: Lower bound of problem.
+			Upper: Upper bound of problem.
 
 		See Also:
 			:func:`NiaPy.benchmarks.Benchmark.__init__`
@@ -210,36 +193,20 @@ class Sphere3(Benchmark):
 		Benchmark.__init__(self, Lower, Upper)
 
 	@staticmethod
-	def latex_code():
-		r"""Return the latex code of the problem.
+	def latex_code() -> str:
+		"""Return the latex code of the problem.
 
 		Returns:
-			str: Latex code
+			Latex code.
 		"""
-		return r'''$f(\textbf{x}) = \sum_{i = 1}^D \sum_{j = 1}^i x_j^2$'''
+		return r"""$f(\textbf{x}) = \sum_{i = 1}^D \sum_{j = 1}^i x_j^2$"""
 
-	def function(self):
-		r"""Return benchmark evaluation function.
+	def function(self) -> Callable[[np.ndarray, dict], float]:
+		"""Return benchmark evaluation function.
 
 		Returns:
-			Callable[[int, Union[int, float, List[int, float], numpy.ndarray]], float]: Fitness function
+			Evaluation function.
 		"""
-		def evaluate(D, sol):
-			r"""Fitness function.
-
-			Args:
-				D (int): Dimensionality of the problem
-				sol (Union[int, float, List[int, float], numpy.ndarray]): Solution to check.
-
-			Returns:
-				float: Fitness value for the solution.
-			"""
-			val = 0.0
-			for i in range(D):
-				v = .0
-				for j in range(i + 1): val += abs(sol[j]) ** 2
-				val += v
-			return val
-		return evaluate
+		return lambda x, **a: sphere3_function(x)
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3

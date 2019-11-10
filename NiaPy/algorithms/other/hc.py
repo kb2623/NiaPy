@@ -1,5 +1,4 @@
 # encoding=utf8
-# pylint: disable=mixed-indentation, trailing-whitespace, multiple-statements, attribute-defined-outside-init, logging-not-lazy, arguments-differ, redefined-outer-name, bad-continuation, unused-argument
 import logging
 
 from numpy import random as rand
@@ -46,9 +45,8 @@ class HillClimbAlgorithm(Algorithm):
 	License:
 		MIT
 
-	Reference URL:
-
 	Reference paper:
+		Mernik, Marjan, et al. Evolucijski algoritmi. Fakulteta za elektrotehniko, računalništvo in informatiko, Inštitut za računalništvo, 2003
 
 	See Also:
 		* :class:`NiaPy.algorithms.Algorithm`
@@ -66,15 +64,15 @@ class HillClimbAlgorithm(Algorithm):
 		Returns:
 			str: Basic information.
 		"""
-		return r"""TODO"""
+		return r"""Mernik, Marjan, et al. Evolucijski algoritmi. Fakulteta za elektrotehniko, računalništvo in informatiko, Inštitut za računalništvo, 2003"""
 
 	@staticmethod
 	def typeParameters():
-		r"""TODO.
+		r"""Get dictionary with functions for checking values of parameters.
 
 		Returns:
 			Dict[str, Callable]:
-				* delta (Callable[[Union[int, float]], bool]): TODO
+				* delta (Callable[[Union[int, float]], bool])
 		"""
 		return {'delta': lambda x: isinstance(x, (int, float)) and x > 0}
 
@@ -85,16 +83,9 @@ class HillClimbAlgorithm(Algorithm):
 			* delta (Optional[float]): Change for searching in neighborhood.
 			* Neighborhood (Optional[Callable[numpy.ndarray, float, Task], Tuple[numpy.ndarray, float]]]): Function for getting neighbours.
 		"""
+		ukwargs.pop('NP', None)
 		Algorithm.setParameters(self, NP=1, **ukwargs)
 		self.delta, self.Neighborhood = delta, Neighborhood
-
-	def getParameters(self):
-		d = Algorithm.getParameters(self)
-		d.update({
-			'delta': self.delta,
-			'Neighborhood': self.Neighborhood
-		})
-		return d
 
 	def initPopulation(self, task):
 		r"""Initialize stating point.
@@ -108,8 +99,8 @@ class HillClimbAlgorithm(Algorithm):
 				2. New individual function/fitness value.
 				3. Additional arguments.
 		"""
-		x = task.Lower + self.rand(task.D) * task.bRange
-		return x, task.eval(x), {}
+		x, xf, d = Algorithm.initPopulation(self, task)
+		return (x[0], xf[0], {}) if len(x.shape) > 1 else (x, xf, {})
 
 	def runIteration(self, task, x, fx, xb, fxb, **dparams):
 		r"""Core function of HillClimbAlgorithm algorithm.
@@ -123,7 +114,7 @@ class HillClimbAlgorithm(Algorithm):
 			**dparams (Dict[str, Any]): Additional arguments.
 
 		Returns:
-			Tuple[numpy.ndarray, float, numpy.ndarray, float, Dict[str, Any]]:
+			Tuple[numpy.ndarray, float, Dict[str, Any]]:
 				1. New solution.
 				2. New solutions function/fitness value.
 				3. Additional arguments.
@@ -134,7 +125,7 @@ class HillClimbAlgorithm(Algorithm):
 			yn, yn_f = self.Neighborhood(x, self.delta, task, rnd=self.Rand)
 			if yn_f < xn_f: xn, xn_f = yn, yn_f
 			else: lo = True or task.stopCond()
-		xb, fxb = self.getBest(xn, xn_f, xb, fxb)
+		if xn_f <= fxb: xb, fxb = xn, xn_f
 		return xn, xn_f, xb, fxb, {}
 
 # vim: tabstop=3 noexpandtab shiftwidth=3 softtabstop=3
